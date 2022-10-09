@@ -18,16 +18,16 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "dev-data.sqlite"))
     SESSION_COOKIE_SECURE = False
     SESSION_PERMAMENT = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "dev-data.sqlite"))
     
 
 class TestingConfig(Config):
     TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "test-data.sqlite"))
     SESSION_COOKIE_SECURE = False
     SESSION_PERMAMENT = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///" + os.path.join(basedir, "test-data.sqlite"))
     
 
 config = {

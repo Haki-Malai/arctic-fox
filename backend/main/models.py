@@ -1,6 +1,7 @@
+#from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask import jsonify
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -66,7 +67,7 @@ class Admin(db.Model):
     email = db.Column(db.String(25))
     creation_date = db.Column(db.Date)
     last_seen_date = db.Column(db.DateTime)
-    
+    # Ralationships 
     tasks = db.relationship('Task', backref='admin')
     payments = db.relationship('Payment', backref='admin')
 

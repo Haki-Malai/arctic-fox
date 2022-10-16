@@ -1,11 +1,10 @@
 from datetime import datetime
-import hashlib
+from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
-from markdown import markdown
-import bleach
-import jwt #Serializer
-from flask import current_app, request, url_for
+from flask import current_app, url_for
 from flask_login import UserMixin, AnonymousUserMixin
+from time import time
+import jwt
 from app.exceptions import ValidationError
 from . import db, login_manager
 
@@ -103,6 +102,8 @@ class User(UserMixin, db.Model):
     avatar_hash = db.Column(db.String(32))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
+    tasks = db.relationship('Task', backref='user', lazy='dynamic')
     following = db.relationship(
         'Follow',
         foreign_keys=[Follow.follower_id],
@@ -117,9 +118,6 @@ class User(UserMixin, db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan'
     )
-    notifications = db.relationship('Notification', backref='user',
-                                    lazy='dynamic')
-    tasks = db.relationship('Task', backref='user', lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -135,6 +133,12 @@ class User(UserMixin, db.Model):
             self.avatar_hash = self.gravatar_hash()
         self.follow(self)
 
+    def can(self, perm):
+        return self.role is not None and self.role.has_permission(perm)
+
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -147,54 +151,47 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id})
+        return jwt.encode(
+            {'confirm': self.id, 'exp': time() + expiration},
+            current_app.config['SECRET_KEY'], algorithm='HS256')
 
     def confirm(self, token):
-        s = Serializer(current_app.config['SECRET_KEY'])
         try:
-            data = s.loads(token)
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['confirm']
         except:
-            return False
-        if data.get('confirm') != self.id:
             return False
         self.confirmed = True
         db.session.add(self)
         return True
 
     def generate_reset_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id}).decode('utf-8')
+        return jwt.encode(
+            {'reset': self.id, 'exp': time() + expiration},
+            current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    @staticmethod
-    def reset_password(token, new_password):
-        s = Serializer(current_app.config['SECRET_KEY'])
+    def reset_password(self, token, new_password):
         try:
-            data = s.loads(token.encode('utf-8'))
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['reset']
         except:
             return False
-        user = User.query.get(data.get('reset'))
-        if user is None:
-            return False
-        user.password = new_password
-        db.session.add(user)
+        self.password = new_password
+        db.session.add(self)
         return True
     
     def generate_email_change_token(self, new_email, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps(
-            {'change_email': self.id, 'new_email': new_email}).decode('utf-8')
+        return jwt.encode(
+            {'change_email': self.id, 'new_email': new_email, 'exp': time() + expiration},
+            current_app.config['SECRET_KEY'], algorithm='HS256')
     
     def change_email(self, token):
-        s = Serializer(current_app.config['SECRET_KEY'])
         try:
-            data = s.loads(token.encode('utf-8'))
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['change_email']
+            new_email = jwt.decode(token, current_app.config['SECRET_KEY'],
+                                   algorithms=['HS256'])['new_email']
         except:
-            return False
-        if data.get('change_email') != self.id:
-            return False
-        new_email = data.get('new_email')
-        if new_email is None:
             return False
         if self.query.filter_by(email=new_email).first() is not None:
             return False
@@ -203,24 +200,17 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    def can(self, perm):
-        return self.role_id is not None and self.role.has_permission(perm)
-
-    def is_administrator(self):
-        return self.can(Permission.ADMINISTER)
-
-
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
         db.session.commit()
 
     def gravatar_hash(self):
-        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+        return md5(self.email.lower().encode('utf-8')).hexdigest()
 
     def gravatar(self, size=100, default='identicon', rating='g'):
         url = 'https://www.gravatar.com/avatar'
-        hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        hash = md5(self.email.encode('utf-8')).hexdigest()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=hash, size=size, default=default, rating=rating)
 
@@ -228,11 +218,13 @@ class User(UserMixin, db.Model):
         if not self.is_following(user):
             f = Follow(follower=self, following=user)
             db.session.add(f)
+            return True
 
     def unfollow(self, user):
         f = self.following.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
+            return True
 
     def is_following(self, user):
         if user.id is None:
@@ -249,18 +241,6 @@ class User(UserMixin, db.Model):
     def following_posts(self):
         return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
             .filter(Follow.follower_id == self.id)
-
-    def to_json(self):
-        json_user = {
-            'url': url_for('api.get_user', id=self.id, _external=True),
-            'username': self.username,
-            'member_since': self.member_since,
-            'last_seen': self.last_seen,
-            'posts': url_for('api.get_user_posts', id=self.id, _external=True),
-            'following_posts': url_for('api.get_user_following_posts', id=self.id, _external=True),
-            'post_count': self.posts.count()
-        }
-        return json_user
 
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'],
@@ -283,6 +263,11 @@ class User(UserMixin, db.Model):
         return n
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
@@ -293,95 +278,33 @@ class AnonymousUser(AnonymousUserMixin):
 login_manager.anonymous_user = AnonymousUser
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
+    body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    comments = db.relationship('Comment', backref='user', lazy='dynamic')
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
-                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
-                        'h1', 'h2', 'h3', 'p']
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-
-    def to_json(self):
-        json_post = {
-            'url': url_for('api.get_post', id=self.id, _external=True),
-            'body': self.body,
-            'body_html': self.body_html,
-            'timestamp': self.timestamp,
-            'author': url_for('api.get_user', id=self.author_id, _external=True),
-            'comments': url_for('api.get_post_comments', id=self.id, _external=True),
-            'comment_count': self.comments.count()
-        }
-        return json_post
-
-    @staticmethod
-    def from_json(json_post):
-        body = json_post.get('body')
-        if body is None or body == '':
-            raise ValidationError('post does not have a body')
-        return Post(body=body)
-
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
         
-db.event.listen(Post.body, 'set', Post.on_changed_body)
-
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    disabled = db.Column(db.Boolean)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-    
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code', 'em', 'i',
-                        'strong']
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
 
-    def to_json(self):
-        json_comment = {
-            'url': url_for('api.get_comment', id=self.id, _external=True),
-            'post_url': url_for('api.get_post', id=self.post_id, _external=True),
-            'body': self.body,
-            'body_html': self.body_html,
-            'timestamp': self.timestamp,
-            'disabled': self.disabled,
-            'author_url': url_for('api.get_user', id=self.author_id, _external=True)
-        }
-        return json_comment
-
-    @staticmethod
-    def from_json(json_comment):
-        body = json_comment.get('body')
-        if body is None or body == '':
-            raise ValidationError('comment does not have a body')
-        return Comment(body=body)
-
-db.event.listen(Comment.body, 'set', Comment.on_changed_body)
+    def __repr__(self):
+        return '<Comment {}>'.format(self.body)
 
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.Float, index=True, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     payload_json = db.Column(db.Text)
 
     def get_data(self):
@@ -393,7 +316,7 @@ class Task(db.Model):
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    complete = db.Column(db.Boolean)
+    complete = db.Column(db.Boolean, default=False)
 
     def get_id(self):
         try:
@@ -403,32 +326,3 @@ class Task(db.Model):
 
     def __repr__(self):
         return '<Task %r>' % (self.name)
-
-    def __init__(self, name, description, user, complete):
-        self.name = name
-        self.description = description
-        self.user = user
-        self.complete = complete
-
-    def __repr__(self):
-        return '<Task %r>' % (self.name)
-
-    def to_json(self):
-        json_task = {
-            'url': url_for('api.get_task', id=self.id, _external=True),
-            'name': self.name,
-            'description': self.description,
-            'complete': self.complete,
-            'user_url': url_for('api.get_user', id=self.user_id, _external=True)
-        }
-        return json_task
-
-    @staticmethod
-    def from_json(json_task):
-        name = json_task.get('name')
-        description = json_task.get('description')
-        if name is None or name == '':
-            raise ValidationError('task does not have a name')
-        if description is None or description == '':
-            raise ValidationError('task does not have a description')
-        return Task(name=name, description=description)

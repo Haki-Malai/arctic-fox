@@ -8,6 +8,9 @@ cli.register(app)
 
 @app.shell_context_processor
 def make_shell_context():
-    if app.
+    if app.config['DEBUG']:
+        db.drop_all()
+        db.create_all()
+        Role.insert_roles()
     return dict(db=db, User=User, Role=Role, Permission=Permission,\
         Follow=Follow, Post=Post, Comment=Comment, Notification=Notification)

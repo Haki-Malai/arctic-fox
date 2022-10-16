@@ -42,13 +42,11 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", \
         "sqlite:///" + os.path.join(basedir, "test-data.sqlite"))
-    DELETE_DB = True
 
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", \
         "sqlite:///" + os.path.join(basedir, "data.sqlite"))
-    DELETE_DB = True
     SQLALCHEMY_RECORD_QUERIES = True
     SLOW_DB_QUERY_TIME = 0.5
     SESSION_PERMAMENT = False

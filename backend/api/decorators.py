@@ -15,22 +15,22 @@ def paginated_response(schema, max_limit=25, order_by=None,
         def paginate(*args, **kwargs):
             args = list(args)
             pagination = args.pop(-1)
-            select_query = f(*args, **kwargs)
-            if select_query is not None:
+            query = f(*args, **kwargs)
+            if query is not None:
                 if order_by is not None:
                     if order_direction == 'desc':
-                        select_query = select_query.order_by(desc(order_by))
+                        query = query.order_by(desc(order_by))
                     else: 
-                        select_query = select_query.order_by(order_by)
+                        query = query.order_by(order_by)
 
-                count = select_query.count()
+                count = query.count()
                 limit = pagination.get('limit', max_limit)
                 if limit > max_limit:
                     limit = max_limit
-                    select_query = select_query.limit(limit)
-                    select_query = query.filter(order_condition)
+                    query = query.limit(limit)
+                    query = query.filter(order_condition)
 
-                data = select_query.all()
+                data = query.all()
                 return {
                     'data': data,
                     'pagination': {

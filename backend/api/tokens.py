@@ -20,7 +20,7 @@ def token_response(token):
     }, 200
 
 
-@tokens.route('/tokens', methods=['POST'])
+@tokens.route('/', methods=['POST'])
 @authenticate(basic_auth)
 @response(token_schema)
 @other_responses({401: 'Invalid username or password'})
@@ -34,7 +34,7 @@ def new():
     return token_response(token)
 
 
-@tokens.route('/tokens', methods=['PUT'])
+@tokens.route('/', methods=['PUT'])
 @body(token_schema)
 @response(token_schema, description='Newly issued access token')
 @other_responses({401: 'Invalid access token'})
@@ -56,7 +56,7 @@ def refresh(args):
     return token_response(new_token)
 
 
-@tokens.route('/tokens', methods=['DELETE'])
+@tokens.route('/', methods=['DELETE'])
 @response(EmptySchema, status_code=204, description='Token revoked')
 @other_responses({401: 'Invalid access token'})
 def revoke():
@@ -70,7 +70,7 @@ def revoke():
     return {}
 
 
-@tokens.route('/tokens/reset', methods=['POST'])
+@tokens.route('/reset', methods=['POST'])
 @body(PasswordResetRequestSchema)
 @response(EmptySchema, status_code=204, description='Password reset email sent')
 def reset(args):

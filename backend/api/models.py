@@ -136,20 +136,6 @@ class User(UserMixin, db.Model):
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    following = db.relationship(
-        'Follow',
-        foreign_keys=[Follow.follower_id],
-        backref=db.backref('follower', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    followers = db.relationship(
-        'Follow',
-        foreign_keys=[Follow.followed_id],
-        backref=db.backref('following', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -170,6 +156,14 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
+
+    def update(self, data):
+        if 'username' in data:
+            self.username = data['username']
+        if 'email' in data:
+            self.email = data['email']
+        if 'name' in data:
+            self.name = data['name']
 
     @property
     def password(self):
@@ -260,7 +254,7 @@ class User(UserMixin, db.Model):
 
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self, following=user)
+            f = Follow(follower_id=self.id, followed_id=user.id)
             db.session.add(f)
             return True
 
@@ -282,8 +276,18 @@ class User(UserMixin, db.Model):
             follower_id=user.id).first() is not None
 
     @property
+    def followers(self):
+        return User.query.join(Follow, Follow.follower_id == User.id)\
+            .filter(Follow.followed_id == self.id)
+
+    @property
+    def following(self):
+        return User.query.join(Follow, Follow.followed_id == User.id)\
+            .filter(Follow.follower_id == self.id)
+
+    @property
     def following_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+        return Post.query.join(Follow, Follow.followed_id == Post.user_id)\
             .filter(Follow.follower_id == self.id)
 
     def add_notification(self, name, data):

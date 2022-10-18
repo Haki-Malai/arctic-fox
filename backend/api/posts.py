@@ -11,7 +11,7 @@ posts = Blueprint('posts', __name__)
 post_schema = PostSchema(many=True)
 
 
-@posts.route('/posts')
+@posts.route('/')
 @authenticate(token_auth)
 @paginated_response(post_schema,
                     order_by=Post.timestamp,

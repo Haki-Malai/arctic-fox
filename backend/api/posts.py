@@ -73,3 +73,15 @@ def delete(id):
     db.session.delete(post)
     db.session.commit()
     return '', 204
+
+
+@posts.route('/user/<int:id>')
+@authenticate(token_auth)
+@other_responses({404: 'User not found'})
+@paginated_response(posts_schema,
+                    order_by=Post.timestamp,
+                    order_direction='desc',
+                    pagination_schema=DateTimePaginationSchema)
+def get_user(id):
+    """Retrieve an user's posts"""
+    return Post.query.filter_by(user_id=id)

@@ -1,7 +1,7 @@
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 from api import db
-from api.models import User, Posts, Comment, Permission
+from api.models import User, Post, Comment, Permission
 from api.schemas import CommentSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response

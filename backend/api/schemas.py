@@ -92,14 +92,16 @@ class TokenSchema(ma.Schema):
 
     access_token = ma.String(required=True)
 
-class PostSchema(ma.SQLAlchemyAutoSchema):
+
+class PostSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Post
         ordered = True
-        load_instance = True
-        include_fk = True
-        incluce_relationships = True
 
+    id = ma.auto_field(dump_only=True)
+    body = ma.auto_field(required=True, validate=validate.Length(min=1, max=140))
+    timestamp = ma.auto_field(dump_only=True)
+    
 
 class TokenSchema(ma.Schema):
     class Meta:

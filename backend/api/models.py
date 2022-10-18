@@ -132,8 +132,8 @@ class User(UserMixin, db.Model):
     avatar_hash = db.Column(db.String(32))
     # Relationships
     tokens = db.relationship('Token', backref='user', lazy='dynamic')
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    posts = db.relationship('Post', backref='user', lazy='dynamic')
+    comments = db.relationship('Comment', backref='user', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
 
@@ -156,6 +156,9 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
+
+    def get_roles(self):
+        return db.session.get(Role, self.role_id).name
 
     def update(self, data):
         if 'username' in data:
@@ -197,6 +200,8 @@ class User(UserMixin, db.Model):
             refresh_token=refresh_token, access_token=access_token).first()
         if token:
             if token.refresh_expiration > datetime.utcnow():
+                token.user.ping()
+                db.session.commit()
                 return token
 
             # Someone tried to refresh with an expired token
@@ -310,11 +315,13 @@ class Post(db.Model):
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    comments = db.relationship('Comment', backref='user', lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
-        
+ 
+    def update(self, data):
+        self.body = data['body']       
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

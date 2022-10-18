@@ -44,6 +44,8 @@ class DevelopmentConfig(Config):
         "sqlite:///" + os.path.join(basedir, "dev-data.sqlite"))
     SESSION_COOKIE_SECURE = False
     SESSION_PERMAMENT = True
+    ACCESS_TOKEN_MINUTES = 30000
+    REFRESH_TOKEN_DAYS = 30000
     
 
 class TestingConfig(Config):

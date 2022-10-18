@@ -1,19 +1,20 @@
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 from api import db
-from api.models import User, Post
+from api.models import User, Post, Permission
+from api.schemas import PostSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
-from api.schemas import PostSchema
-from api.schemas import DateTimePaginationSchema
 
 posts = Blueprint('posts', __name__)
-post_schema = PostSchema(many=True)
+post_schema = PostSchema()
+posts_schema = PostSchema(many=True)
+update_post_schema = PostSchema(partial=True)
 
 
 @posts.route('/')
 @authenticate(token_auth)
-@paginated_response(post_schema,
+@paginated_response(posts_schema,
                     order_by=Post.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
@@ -22,24 +23,53 @@ def all():
     return Post.query
 
 
-#@api.route('/posts', methods=['POST'])
-#@permission_required(Permission.WRITE_ARTICLES)
-#def new_posts():
-    #post = Post.from_json(request.json)
-    #post.author = g.current_user
-    #db.session.add(post)
-    #db.session.commit()
-    #return jsonify(post.to_json()), 201, \
-        #{'Location': url_for('api.get_post', id=post.id, _external=True)}
+@posts.route('/<int:id>', methods=['GET'])
+@authenticate(token_auth)
+@response(post_schema)
+@other_responses({404: 'Post not found'})
+def get(id):
+    """Retrieve a post by id"""
+    return db.session.get(Post, id) or abort(404)
 
-#@api.route('/posts/<int:id>', methods=['PUT'])
-#@permission_required(Permission.WRITE_ARTICLES)
-#def edit_post(id):
-    #post = Post.query.get_or_404(id)
-    #if g.current_user != post.author and \
-            #not g.current_user.can(Permission.ADMIN):
-        #return error_response(403)
-    #post.body = request.json.get('body', post.body)
-    #db.session.add(post)
-    #db.session.commit()
-    #return jsonify(post.to_json())
+
+@posts.route('/', methods=['POST'])
+@body(post_schema)
+@response(post_schema, 201)
+@other_responses({403: 'Permission denied'})
+def new(args):
+    """Create a new post"""
+    user = token_auth.current_user()
+    post = Post(user_id=user.id, **args)
+    db.session.add(post)
+    db.session.commit()
+    return post
+
+@posts.route('/<int:id>', methods=['PUT'])
+@authenticate(token_auth)
+@body(update_post_schema)
+@response(post_schema)
+@other_responses({403: 'Not allowed to edit this post',
+                  404: 'Post not found'})
+def put(data, id):
+    """Edit a post"""
+    post = db.session.get(Post, id) or abort(404)
+    if post.user_id != token_auth.current_user().id and \
+        token_auth.current_user().can(Permission.MODERATE_COMMENTS):
+        abort(403)
+    post.update(data)
+    db.session.commit()
+    return post
+
+
+@posts.route('/<int:id>', methods=['DELETE'])
+@authenticate(token_auth)
+@other_responses({403: 'Not allowed to delete the post'})
+def delete(id):
+    """Delete a post"""
+    post = db.session.get(Post, id) or abort(404)
+    if post.user_id != token_auth.current_user().id and \
+        token_auth.current_user().can(Permission.MODERATE_COMMENTS):
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    return '', 204

@@ -4,7 +4,6 @@ from apifairy import arguments, response
 from sqlalchemy.sql.expression import desc
 from api.app import db
 from api.schemas import StringPaginationSchema, PaginatedCollection
-from .models import Permission
 
 
 def paginated_response(schema, max_limit=25, order_by=None,
@@ -45,16 +44,3 @@ def paginated_response(schema, max_limit=25, order_by=None,
             schema, pagination_schema=pagination_schema))(paginate))
 
     return inner
-
-def permission_required(permission):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not current_user.can(permission):
-                abort(403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-def admin_required(f):
-    return permission_required(Permission.ADMINISTER)(f)

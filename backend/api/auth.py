@@ -1,7 +1,7 @@
 from api.errors.handlers import error_response
-from api.models import User
+from api.models import User, Permission
 from api.app import db
-from flask import current_app
+from flask import current_app, abort
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 
 basic_auth = HTTPBasicAuth()
@@ -20,7 +20,7 @@ def verify_password(username, password):
 
 @basic_auth.error_handler
 def auth_error(status_code=401):
-    return error_response(status_code)
+    return abort(status_code)
 
 
 @token_auth.verify_token
@@ -31,4 +31,9 @@ def verify_token(access_token):
         
 @token_auth.error_handler
 def token_error(status_code=401):
-    return error_response(status_code)
+    return abort(status_code)
+
+    
+#@token_auth.get_user_roles
+#def get_user_roles(user):
+    #return user.get_roles()

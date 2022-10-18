@@ -2,7 +2,7 @@ from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
 from api import ma, db
 from api.auth import token_auth
-from api.models import User, Post
+from api.models import User, Post, Comment
 
 paginated_schema_cache = {}
 
@@ -99,9 +99,28 @@ class PostSchema(ma.SQLAlchemySchema):
         ordered = True
 
     id = ma.auto_field(dump_only=True)
-    body = ma.auto_field(required=True, validate=validate.Length(min=1, max=140))
+    body = ma.auto_field(required=True,\
+        validate=validate.Length(min=1, max=140))
     timestamp = ma.auto_field(dump_only=True)
+
     
+class CommentSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Comment
+        ordered = True
+
+    id = ma.auto_field(dump_only=True)
+    body = ma.auto_field(required=True,\
+        validate=validate.Length(min=1, max=140))
+    timestamp = ma.auto_field(dump_only=True) 
+    post_id = ma.auto_field(required=True)
+
+    @validates('post_id')
+    def validate_old_password(self, value):
+        try:
+            int(value)
+        except ValueError:
+            raise ValueError(f'Post id must be an integer not {type(value)}')
 
 class TokenSchema(ma.Schema):
     class Meta:

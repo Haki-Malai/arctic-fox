@@ -30,6 +30,8 @@ def create_app(config_name):
     app.register_blueprint(users, url_prefix='/api/users')
     from api.posts import posts
     app.register_blueprint(posts, url_prefix='/api/posts')
+    from api.comments import comments
+    app.register_blueprint(comments, url_prefix='/api/comments')
 
     @app.route('/')
     def index():  # pragma: no cover

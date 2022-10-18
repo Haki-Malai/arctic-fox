@@ -150,74 +150,67 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, expiration=3600):
-        return jwt.encode(
-            {'auth': self.id, 'exp': time() + 3600},
-            current_app.config['SECRET_KEY'], algorithm='HS256')
-
-    def generate_auth_token(self, expiration=3600):
-        return jwt.encode(
-            {'auth': self.id, 'exp': time() + 3600},
-            current_app.config['SECRET_KEY'], algorithm='HS256')
+    def generate_auth_token(self):
+        token = Token(user=self)
+        token.generate()
+        return token
 
     @staticmethod
-    def verify_auth_token(access_token, refresh_token=None):
-        try:
-            id = jwt.decode(access_token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['auth']
-        except:
-            return None
-        return User.query.get(id) is not None
+    def verify_access_token(access_token, refresh_token=None):
+        token = Token.query.filter_by(
+            access_token=access_token).first()
+        if token:
+            if token.access_expiration > datetime.utcnow():
+                token.user.ping()
+                db.session.commit()
+                return token.user
 
-    def generate_confirmation_token(self, expiration=3600):
+    @staticmethod
+    def verify_refresh_token(refresh_token, access_token):
+        token = Token.query.filter_by(
+            refresh_token=refresh_token, access_token=access_token).first()
+        if token:
+            if token.refresh_expiration > datetime.utcnow():
+                return token
+
+            # Someone tried to refresh with an expired token
+            # Revoke all tokens from this user as a precaution
+            token.user.revoke_all()
+            db.session.add(token)
+            db.session.commit()
+
+    def revoke_all(self):
+        for token in self.tokens:
+            token.expire()
+
+    def generate_confirm_token(self):
         return jwt.encode(
             {'confirm': self.id, 'exp': time() + expiration},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    def confirm(self, confirmation_token):
+    def confirm(self, reset_token):
         try:
-            id = jwt.decode(confirmation_token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['confirm']
-        except:
-            return False
-        self.confirmed = True
-        db.session.add(self)
-        return True
+            email = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
+                              algorithms=['HS256'])['email']
+        except jwt.PyJWTError:
+            return
+        self.confirmed = self.email == email
+        return self.confirmed
 
     def generate_reset_token(self, expiration=3600):
         return jwt.encode(
             {'reset': self.id, 'exp': time() + expiration},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    def reset_password(self, token, new_password):
+    @staticmethod
+    def verify_reset_token(reset_token):
         try:
-            id = jwt.decode(token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['reset']
-        except:
-            return False
-        self.password = new_password
-        db.session.add(self)
-        return True
-    
-    def generate_email_change_token(self, new_email, expiration=3600):
-        return jwt.encode(
-            {'change_email': self.id, 'new_email': new_email, 'exp': time() + expiration},
-            current_app.config['SECRET_KEY'], algorithm='HS256')
-    
-    def change_email(self, token):
-        try:
-            id = jwt.decode(token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['change_email']
-            new_email = jwt.decode(token, current_app.config['SECRET_KEY'],
-                                   algorithms=['HS256'])['new_email']
-        except:
-            return False
-        if self.query.filter_by(email=new_email).first() is not None:
-            return False
-        self.email = new_email
-        self.avatar_hash = self.gravatar_hash()
-        db.session.add(self)
-        return True
+            data = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
+                              algorithms=['HS256'])
+        except jwt.PyJWTError:
+            return
+        return db.session.scalar(User.select().filter_by(
+            email=data['reset_email']))
 
     def ping(self):
         self.last_seen = datetime.utcnow()

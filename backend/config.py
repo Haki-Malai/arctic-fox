@@ -7,8 +7,6 @@ class Config:
     UPLOAD_FOLDER = os.path.join(basedir, 'static/uploads')
     # SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # WTF Forms
-    WTF_CSRF_ENABLED = False
     # Custom
     ADMIN = os.environ.get("ADMIN", "admin@arctic-fox.com")
     POSTS_PER_PAGE = 20
@@ -24,6 +22,16 @@ class Config:
     MAIL_SUBJECT_PREFIX = '[Arctic Fox]'
     MAIL_SENDER = f'Arctic Fox Admin <{ADMIN}>'
     SLOW_DB_QUERY_TIME = 0.5
+    # APIFairy
+    APIFAIRY_TITLE = os.environ.get("APIFAIRY_TITLE", "Arctic Fox")
+    APIFAIRY_VERSION = os.environ.get("APIFAIRY_VERSION", "v1")
+    APIFAIRY_DESCRIPTION = os.environ.get("APIFAIRY_DESCRIPTION", "Arctic Fox is a simple blog app written in Python and Flask.")
+    APIFAIRY_DOCS = os.environ.get("APIFAIRY_DOCS", "Arctic Fox Documentation")
+    # Tokens
+    REFRESH_TOKEN_IN_COOKIE = False
+    ACCESS_TOKEN_MINUTES = 30
+    REFRESH_TOKEN_DAYS = 30
+    REFRESH_TOKEN_IN_BODY = False
 
     @staticmethod
     def init_app(app):

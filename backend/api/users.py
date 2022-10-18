@@ -109,7 +109,7 @@ def follow(id):
     user = token_auth.current_user()
     followed_user = db.session.get(User, id) or abort(404)
     if user.is_following(followed_user):
-        abort(404)
+        abort(409)
     user.follow(followed_user)
     db.session.commit()
     return {}

@@ -82,7 +82,7 @@ class UpdateUserSchema(UserSchema):
 
     @validates('old_password')
     def validate_old_password(self, value):
-        if not token.current_user().verify_password(value):
+        if not token_auth.current_user().verify_password(value):
             raise ValidationError('Password is incorrect')
 
 

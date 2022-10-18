@@ -22,14 +22,14 @@ def create_app(config_name):
     ma.init_app(app)
 
     # Import blueprints
-    from api.errors import errors as errors_blueprint
-    app.register_blueprint(errors_blueprint)
-    from api.tokens import tokens as tokens_blueprint
-    app.register_blueprint(tokens_blueprint, url_prefix='/api/tokens')
-    from api.users import users as users_blueprint
-    app.register_blueprint(users_blueprint, url_prefix='/api/users')
-    from api.posts import posts as posts_blueprint
-    app.register_blueprint(posts_blueprint, url_prefix='/api/posts')
+    from api.errors import errors
+    app.register_blueprint(errors)
+    from api.tokens import tokens
+    app.register_blueprint(tokens, url_prefix='/api/tokens')
+    from api.users import users
+    app.register_blueprint(users, url_prefix='/api/users')
+    from api.posts import posts
+    app.register_blueprint(posts, url_prefix='/api/posts')
 
     @app.route('/')
     def index():  # pragma: no cover

@@ -1,6 +1,6 @@
 import unittest
-from app import create_app, db
-from app.models import User, Role, AnonymousUser, Permission
+from api.app import create_app, db
+from api.models import User, Role, AnonymousUser, Permission
 
 class UserModelTestCase(unittest.TestCase):
     def setUp(self):

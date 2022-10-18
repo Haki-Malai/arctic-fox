@@ -3,6 +3,8 @@ from sqlalchemy.exc import IntegrityError
 from faker import Faker
 from . import db
 from .models import User, Post, Comment
+from flask import current_app
+
 
 def fake_users(count=10):
     fake = Faker()
@@ -16,7 +18,6 @@ def fake_users(count=10):
             confirmed=True,
             name=fake.name(),
             location=fake.city(),
-            about_me=fake.text(),
             member_since=fake.past_date()
         )
         db.session.add(u)

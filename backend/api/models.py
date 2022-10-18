@@ -1,12 +1,13 @@
-from datetime import datetime
+from api.exceptions import ValidationError
+from .app import db
+import secrets
+from datetime import datetime, timedelta
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app, url_for
 from flask_login import UserMixin, AnonymousUserMixin
 from time import time
 import jwt
-from api.exceptions import ValidationError
-from .app import db
 
 
 class Permission:
@@ -66,6 +67,36 @@ class Role(db.Model):
         return self.permissions & perm == perm
 
 
+class Token(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    access_token = db.Column(db.String(64), nullable=False, index=True)
+    access_expiration = db.Column(db.DateTime, nullable=False)
+    refresh_token = db.Column(db.String(64), nullable=False, index=True)
+    refresh_expiration = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+
+    def generate(self):
+        self.access_token = secrets.token_urlsafe()
+        self.access_expiration = datetime.utcnow() + \
+            timedelta(minutes=current_app.config['ACCESS_TOKEN_MINUTES'])
+        self.refresh_token = secrets.token_urlsafe()
+        self.refresh_expiration = datetime.utcnow() + \
+            timedelta(days=current_app.config['REFRESH_TOKEN_DAYS'])
+
+    def expire(self):
+        self.access_expiration = datetime.utcnow()
+        self.refresh_expiration = datetime.utcnow()
+
+    @property
+    def user(self):
+        return User.query.get(self.user_id)
+
+    @staticmethod
+    def clean():
+        """Remove any tokens that have been expired for more than a day."""
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        Token.query.filter(Token.refresh_expiration < yesterday).delete()
+
 class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                             primary_key=True)
@@ -96,10 +127,11 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(64))
     location = db.Column(db.String(64))
-    about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
+    # Relationships
+    tokens = db.relationship('Token', backref='user', lazy='dynamic')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')

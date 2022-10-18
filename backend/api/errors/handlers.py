@@ -1,7 +1,7 @@
+from api import db
+from . import errors
 from flask import jsonify
 from werkzeug.http import HTTP_STATUS_CODES
-from app.exceptions import ValidationError
-from . import api
 
 
 def error_response(status_code, message=None):
@@ -12,8 +12,12 @@ def error_response(status_code, message=None):
     response.status_code = status_code
     return response
 
+    
+@errors.app_errorhandler(404)
+def not_found_error(error):
+    return error_response(404)
 
-@api.errorhandler(ValidationError)
-def validation_error(e):
-    return bad_request(e.args[0])
-
+@errors.app_errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return error_response(500)

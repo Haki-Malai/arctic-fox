@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
-from app import create_app, db
-from app.models import User, Role, Post, Comment, Notification, AnonymousUser, Permission
+from api.app import create_app, db
+from api.models import User, Role, Post, Comment, Notification, AnonymousUser, Permission
 
 class MediaModelTestCase(unittest.TestCase):
     def setUp(self):

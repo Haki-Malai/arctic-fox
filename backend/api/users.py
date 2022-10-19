@@ -1,5 +1,5 @@
 from api import db
-from api.models import User, Post, Comment, Notification
+from api.models import User, Post, Comment, Notification, Task
 from api.schemas import UserSchema, UpdateUserSchema, EmptySchema,\
     CommentSchema, PostSchema, DateTimePaginationSchema
 from api.auth import token_auth
@@ -7,6 +7,7 @@ from api.decorators import paginated_response
 from api.posts import posts_schema
 from api.comments import comments_schema
 from api.notifications import notifications_schema
+from api.tasks import tasks_schema
 from apifairy import authenticate, body, response
 from apifairy.decorators import other_responses
 from flask import Blueprint, abort
@@ -195,3 +196,13 @@ def get_user_comments():
 def get_user_notifications():
     """Retrieve the notifications of an user"""
     return token_auth.current_user().notifications
+
+
+@users.route('/tasks')
+@authenticate(token_auth)
+@paginated_response(tasks_schema,
+                    order_by=Task.timestamp,
+                    pagination_schema=DateTimePaginationSchema)
+def get_user_tasks():
+    """Retrieve tasks from authenticated user."""
+    return token_auth.current_user().tasks

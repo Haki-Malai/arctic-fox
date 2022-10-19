@@ -1,19 +1,16 @@
-from api.exceptions import ValidationError
 from api.app import db
 import secrets
 from datetime import datetime, timedelta
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app, url_for
-from flask_login import UserMixin, AnonymousUserMixin
+from flask import current_app
 from time import time
 import jwt
         
-assignment = db.Table(
+assigns = db.Table(
     'assignment',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('assignee_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('assigned_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('assignee_id', db.Integer, db.ForeignKey('user.id'))
 )
 
 follower = db.Table(
@@ -82,29 +79,32 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
-    tokens = db.relationship('Token', backref='user', lazy='dynamic')
-    posts = db.relationship('Post', backref='user', lazy='dynamic')
-    comments = db.relationship('Comment', backref='user', lazy='dynamic')
-    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
-    tasks = db.relationship(
-        'Task',
-        secondary=assignment,
-        primaryjoin=(assignment.c.assignee_id == id),
-        secondaryjoin=(assignment.c.assigned_id == id),
+    tokens = db.relationship('Token',
+        backref='user',
         lazy='dynamic')
-    following = db.relationship(
-        'User',
-        cascade="all, delete-orphan",
-        single_parent=True,
+    posts = db.relationship('Post', 
+        backref='user',
+        lazy='dynamic')
+    comments = db.relationship('Comment', 
+        backref='user',
+        lazy='dynamic')
+    notifications = db.relationship('Notification',
+        backref='user',
+        lazy='dynamic')
+    assigned_tasks = db.relationship('Task', 
+        backref='user',
+        lazy='dynamic')
+    assigneed_tasks = db.relationship('Task',
+        secondary=assigns,
+        primaryjoin=(assigns.c.assignee_id == id),
+        lazy='dynamic')
+    following = db.relationship('User',
         secondary=follower,
         primaryjoin=(follower.c.follower_id == id),
         secondaryjoin=(follower.c.followed_id == id),
         back_populates='followers',
         lazy='dynamic')
-    followers = db.relationship(
-        'User',
-        cascade="all, delete-orphan",
-        single_parent=True,
+    followers = db.relationship('User',
         secondary=follower,
         primaryjoin=(follower.c.followed_id == id),
         secondaryjoin=(follower.c.follower_id == id),
@@ -252,15 +252,6 @@ class User(UserMixin, db.Model):
         db.session.add(n)
         return n
 
-    @property
-    def assigned_tasks(self):
-        return self.tasks.filter_by(assigned_id=self.id)
-
-    @property
-    def assigneed_tasks(self):
-        return self.tasks.filter_by(assignee_id=self.id)
-
-
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
@@ -300,7 +291,7 @@ class Notification(db.Model):
 
 
 class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(16), index=True)
     value = db.Column(db.Float)
     description = db.Column(db.String(256))
@@ -312,15 +303,11 @@ class Task(db.Model):
     last_update_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     url = db.Column(db.String(128))
     input_data = db.Column(db.LargeBinary)
-    assignee_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     assigned_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    assignee = db.relationship(
-        'User',
-        back_populates='tasks',
-        foreign_keys=[assignee_id])
     assigned = db.relationship(
         'User',
-        back_populates='tasks',
+        single_parent=True,
+        overlaps='assigned_tasks,user',
         foreign_keys=[assigned_id])
 
     def __repr__(self):

@@ -12,11 +12,12 @@ task_schema = TaskSchema()
 tasks_schema = TaskSchema(many=True)
 
 
-@tasks.route('/')
+@tasks.route('/<int:id>')
 @authenticate(token_auth)
-@paginated_response(tasks_schema,
-                    order_by=Task.timestamp,
-                    pagination_schema=DateTimePaginationSchema)
-def all():
-    """Retrieve tasks from authenticated user."""
-    return token_auth.current_user().get_tasks()
+@response(task_schema)
+@other_responses({403: 'Not allowed to view', 404: 'Task not found'})
+def get(id):
+    task = db.session.get(Task, id) or abort(404)
+    if token_auth.current_user() not in [task.assigned or task.assignee]:
+        abort(403)
+    return task

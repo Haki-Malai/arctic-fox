@@ -144,6 +144,7 @@ class TaskSchema(ma.SQLAlchemySchema):
 
     id = ma.auto_field()
     name = ma.auto_field(dump_only=True)
+    value = ma.auto_field()
     description = ma.auto_field()
     complete = ma.auto_field(dump_only=True)
     timestamp = ma.auto_field(dump_only=True)

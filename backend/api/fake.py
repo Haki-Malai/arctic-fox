@@ -2,7 +2,7 @@ from random import randint
 from sqlalchemy.exc import IntegrityError
 from faker import Faker
 from . import db
-from api.models import User, Post, follower, Comment, Notification, Task, assignment
+from api.models import User, Post, follower, Comment, Notification, Task, assigns
 from flask import current_app
 
 
@@ -29,7 +29,7 @@ def fake_admins(count=2):
         email='test1@test.gr', role='admin')
     db.session.add(u)
     db.session.commit()
-    print('Created default user: useruser1')
+    print('Created default user: useruser')
 
 
 def fake_users(count=10):
@@ -134,15 +134,14 @@ def fake_tasks(count=50):
             name=fake.bs(),
             timestamp=fake.past_date(),
             due_date=fake.future_date(),
-            assignee_id=assignee.id,
             assigned_id=assigned.id,
         )
-        db.session.execute(assignment.insert().values(
+        db.session.add(t)
+        db.session.commit()
+        db.session.execute(assigns.insert().values(
             task_id=t.id,
             assignee_id=assignee.id,
-            assigned_id=assigned.id,
         ))
-        db.session.add(t)
         try:
             db.session.commit()
         except IntegrityError:

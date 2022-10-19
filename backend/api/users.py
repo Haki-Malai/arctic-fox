@@ -17,7 +17,7 @@ users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema()
 
 
-@users.route('/', methods=['GET'])
+@users.route('/')
 @authenticate(token_auth)
 @paginated_response(users_schema)
 def all():
@@ -36,7 +36,7 @@ def new(args):
     return user
 
 
-@users.route('/<int:id>', methods=['GET'])
+@users.route('/<int:id>')
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})
@@ -45,7 +45,7 @@ def get(id):
     return db.session.get(User, id) or abort(404)
 
 
-@users.route('/<username>', methods=['GET'])
+@users.route('/<username>')
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})
@@ -54,7 +54,7 @@ def get_by_username(username):
     return User.query.filter_by(username=username).first() or abort(404)
 
 
-@users.route('/me', methods=['GET'])
+@users.route('/me')
 @authenticate(token_auth)
 @response(user_schema)
 def me():
@@ -77,7 +77,7 @@ def put(data):
     return user
 
 
-@users.route('/me/following', methods=['GET'])
+@users.route('/me/following')
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 def my_following():
@@ -86,7 +86,7 @@ def my_following():
     return user.following
 
 
-@users.route('/me/followers', methods=['GET'])
+@users.route('/me/followers')
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 def my_followers():
@@ -95,7 +95,7 @@ def my_followers():
     return user.followers
 
 
-@users.route('/me/following/<int:id>', methods=['GET'])
+@users.route('/me/following/<int:id>')
 @authenticate(token_auth)
 @response(EmptySchema, status_code=204,
           description='User is followed.')
@@ -141,7 +141,7 @@ def unfollow(id):
     return {}
 
 
-@users.route('/following/<int:id>', methods=['GET'])
+@users.route('/following/<int:id>')
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 @other_responses({404: 'User not found'})
@@ -151,7 +151,7 @@ def following(id):
     return user.following
 
 
-@users.route('/followers/<int:id>', methods=['GET'])
+@users.route('/followers/<int:id>')
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 @other_responses({404: 'User not found'})

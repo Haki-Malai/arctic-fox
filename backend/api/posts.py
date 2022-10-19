@@ -84,6 +84,6 @@ def delete(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_post(id):
-    """Retrieve an post's comments"""
+    """Retrieve the comments of a post"""
     return Comment.query.filter_by(post_id=id) if db.session.get(Posts, id) \
         else abort(404)

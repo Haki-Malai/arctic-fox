@@ -131,7 +131,7 @@ class NotificationSchema(ma.SQLAlchemySchema):
     id = ma.auto_field()
     body = ma.auto_field(required=True,\
         validate=validate.Length(min=1, max=140))
-    seen = ma.auto_field(dump_only=True)
+    read = ma.auto_field(dump_only=True)
     timestamp = ma.auto_field(dump_only=True) 
     post_id = ma.auto_field(dump_only=True)
     comment_id = ma.auto_field(required=True)

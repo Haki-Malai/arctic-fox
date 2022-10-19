@@ -169,7 +169,7 @@ def followers(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_posts(id):
-    """Retrieve an user's posts"""
+    """Retrieve the posts of an user"""
     return token_auth.current_user().posts
 
 
@@ -181,7 +181,7 @@ def get_user_posts(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_comments():
-    """Retrieve an user's comments"""
+    """Retrieve the comments of an user"""
     return token_auth.current_user().comments
 
 
@@ -193,5 +193,5 @@ def get_user_comments():
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_notifications():
-    """Retrieve an user's notifications"""
+    """Retrieve the notifications of an user"""
     return token_auth.current_user().notifications

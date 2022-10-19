@@ -97,6 +97,7 @@ class Token(db.Model):
         yesterday = datetime.utcnow() - timedelta(days=1)
         Token.query.filter(Token.refresh_expiration < yesterday).delete()
 
+
 class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                             primary_key=True)
@@ -337,7 +338,7 @@ class Comment(db.Model):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
-    seen = db.Column(db.Boolean, default=False)
+    read = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))

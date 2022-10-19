@@ -12,6 +12,8 @@ ma = Marshmallow()
 
 def create_app(config_name):
     app = Flask(__name__)
+    from api.cli import run_script
+    app.register_blueprint(run_script)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 

@@ -25,6 +25,11 @@ def fake_admins(count=2):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+    u = User(username='useruser', password='password',\
+        email='test1@test.gr', role='admin')
+    db.session.add(u)
+    db.session.commit()
+    print('Created default user: useruser1')
 
 
 def fake_users(count=10):
@@ -131,12 +136,13 @@ def fake_tasks(count=50):
             timestamp=fake.past_date(),
             due_date=fake.future_date(),
         )
+        db.session.add(t)
         a = Assignment(
             task=t.id,
             assignee=assignee.id,
             assigned=assigned.id,
         )
-        db.session.add(a,t)
+        db.session.add(a)
         try:
             db.session.commit()
         except IntegrityError:

@@ -1,6 +1,6 @@
 from api import db
 from api.models import User
-from api.schemas import UserSchema, UpdateUserSchema, EmptySchema
+from api.schemas import UserSchema, UpdateUserSchema, EmptySchema, CommentSchema, PostSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
 
@@ -12,6 +12,8 @@ users = Blueprint('users', __name__)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema()
+comments_schema = CommentSchema(many=True)
+posts_schema = PostSchema(many=True)
 
 
 @users.route('/', methods=['GET'])

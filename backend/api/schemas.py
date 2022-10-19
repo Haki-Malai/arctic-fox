@@ -2,7 +2,7 @@ from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
 from api import ma, db
 from api.auth import token_auth
-from api.models import User, Post, Comment, Notification
+from api.models import User, Post, Comment, Notification, Task
 
 paginated_schema_cache = {}
 
@@ -134,7 +134,25 @@ class NotificationSchema(ma.SQLAlchemySchema):
     read = ma.auto_field(dump_only=True)
     timestamp = ma.auto_field(dump_only=True) 
     post_id = ma.auto_field(dump_only=True)
-    comment_id = ma.auto_field(required=True)
+    comment_id = ma.auto_field(dump_only=True)
+
+    
+class TaskSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Task
+        ordered = True
+
+    id = ma.auto_field()
+    name = ma.auto_field(dump_only=True)
+    description = ma.auto_field()
+    complete = ma.auto_field(dump_only=True)
+    timestamp = ma.auto_field(dump_only=True)
+    start_date = ma.auto_field(dump_only=True)
+    due_date = ma.auto_field()
+    end_date = ma.auto_field(dump_only=True)
+    last_update_date = ma.auto_field(dump_only=True)
+    url = ma.auto_field()
+    input_data = ma.auto_field()
 
 
 class TokenSchema(ma.Schema):

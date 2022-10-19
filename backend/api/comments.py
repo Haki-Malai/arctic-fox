@@ -1,5 +1,5 @@
 from flask import Blueprint, abort
-from api.models import User, Post, Comment, Permission
+from api.models import User, Post, Comment
 from api.schemas import CommentSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response

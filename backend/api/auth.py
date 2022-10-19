@@ -1,5 +1,4 @@
-from api.errors.handlers import error_response
-from api.models import User, Permission
+from api.models import User
 from api.app import db
 from flask import current_app, abort
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth

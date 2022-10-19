@@ -34,6 +34,8 @@ def create_app(config_name):
     app.register_blueprint(comments, url_prefix='/api/comments')
     from api.notifications import notifications
     app.register_blueprint(notifications, url_prefix='/api/notification')
+    from api.tasks import tasks
+    app.register_blueprint(tasks, url_prefix='/api/tasks')
 
     @app.route('/')
     def index():  # pragma: no cover

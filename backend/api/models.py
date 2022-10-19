@@ -10,63 +10,6 @@ from time import time
 import jwt
 
 
-class Permission:
-    FOLLOW = 0x01
-    COMMENT = 0x02
-    WRITE_ARTICLES = 0x04
-    MODERATE_COMMENTS = 0x08
-    ADMINISTER = 0x10
-
-
-class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    default = db.Column(db.Boolean, default=False, index=True)
-    permissions = db.Column(db.Integer)
-    users = db.relationship('User', backref='role', lazy='dynamic')
-    
-    def __repr__(self):
-        return '<Role %r>' % self.name
-
-    def __init__(self, **kwargs):
-        super(Role, self).__init__(**kwargs)
-        if self.permissions is None:
-            self.permissions = 0
-
-    @staticmethod
-    def insert_roles():
-        roles = {
-            'User': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE_ARTICLES],
-            'Moderator': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE_ARTICLES, Permission.MODERATE_COMMENTS],
-            'Administrator': [0xff]
-        }
-        default_role = 'User'
-        for r in roles:
-            role = Role.query.filter_by(name=r).first()
-            if role is None:
-                role = Role(name=r)
-            role.reset_permissions()
-            for perm in roles[r]:
-                role.add_permission(perm)
-            role.default = (role.name == default_role)
-            db.session.add(role)
-        db.session.commit()
-
-    def add_permission(self, perm):
-        if not self.has_permission(perm):
-            self.permissions += perm
-        
-    def remove_permission(self, perm):
-        if self.has_permission(perm):
-            self.permissions -= perm
-            
-    def reset_permissions(self):
-        self.permissions = 0
-
-    def has_permission(self, perm):
-        return self.permissions & perm == perm
-
-
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     access_token = db.Column(db.String(64), nullable=False, index=True)
@@ -74,6 +17,9 @@ class Token(db.Model):
     refresh_token = db.Column(db.String(64), nullable=False, index=True)
     refresh_expiration = db.Column(db.DateTime, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+
+    def __repr__(self):
+        return '<Token %r>' % self.id
 
     def generate(self):
         self.access_token = secrets.token_urlsafe()
@@ -99,11 +45,15 @@ class Token(db.Model):
 
 
 class Follow(db.Model):
-    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
-                            primary_key=True)
-    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
-                            primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    follower = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            index=True)
+    followed = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            index=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<Follow %r %r>' % (self.follower, self.followed)
 
 
 class User(UserMixin, db.Model):
@@ -121,7 +71,7 @@ class User(UserMixin, db.Model):
     
     """
     id = db.Column(db.Integer, primary_key=True)
-    role_id = db.Column(db.String(64), db.ForeignKey('role.id'))
+    role = db.Column(db.String(16), default='user')
     username = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
@@ -131,32 +81,21 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
-    # Relationships
     tokens = db.relationship('Token', backref='user', lazy='dynamic')
     posts = db.relationship('Post', backref='user', lazy='dynamic')
     comments = db.relationship('Comment', backref='user', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
-    tasks = db.relationship('Task', backref='user', lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        if self.role is None:
-            if self.email == current_app.config['ADMIN']:
-                self.role = Role.query.filter_by(permissions=0xff).first()
-            if self.role is None:
-                self.role = Role.query.filter_by(default=True).first()
+        if self.email == current_app.config['ADMIN']:
+            self.role = 'admin'
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
         self.follow(self)
-
-    def can(self, perm):
-        return self.role is not None and self.role.has_permission(perm)
-
-    def is_administrator(self):
-        return self.can(Permission.ADMINISTER)
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
@@ -260,12 +199,12 @@ class User(UserMixin, db.Model):
 
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower_id=self.id, followed_id=user.id)
+            f = Follow(follower=self.id, followed=user.id)
             db.session.add(f)
             return True
 
     def unfollow(self, user):
-        f = self.following.filter_by(followed_id=user.id).first()
+        f = self.following.filter_by(followed=user.id).first()
         if f:
             db.session.delete(f)
             return True
@@ -273,28 +212,28 @@ class User(UserMixin, db.Model):
     def is_following(self, user):
         if user.id is None:
             return False
-        return self.following.filter_by(followed_id=user.id).first() is not None
+        return self.following.filter_by(followed=user.id).first() is not None
     
     def is_following_by(self, user):
         if user.id is None:
             return False
         return self.followers.filter_by(
-            follower_id=user.id).first() is not None
+            follower=user.id).first() is not None
 
     @property
     def followers(self):
-        return User.query.join(Follow, Follow.follower_id == User.id)\
-            .filter(Follow.followed_id == self.id)
+        return User.query.join(Follow, Follow.follower == User.id)\
+            .filter(Follow.followed == self.id)
 
     @property
     def following(self):
-        return User.query.join(Follow, Follow.followed_id == User.id)\
-            .filter(Follow.follower_id == self.id)
+        return User.query.join(Follow, Follow.followed == User.id)\
+            .filter(Follow.follower == self.id)
 
     @property
     def following_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.user_id)\
-            .filter(Follow.follower_id == self.id)
+        return Post.query.join(Follow, Follow.followed == Post.user_id)\
+            .filter(Follow.follower == self.id)
 
     def add_notification(self, name, data):
         self.notifications.filter_by(name=name).delete()
@@ -302,13 +241,13 @@ class User(UserMixin, db.Model):
         db.session.add(n)
         return n
 
+    def get_tasks(self):
+        return Task.query.join(Assignment, Assignment.task == Task.id)\
+            .filter(Assignment.assigned == self.id)
 
-class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissions):
-        return False
-
-    def is_administrator(self):
-        return False
+    def get_tasks_as_assignee(self):
+        return Task.query.join(Assignment, Assignment.task == Task.id)\
+            .filter(Assignment.assignee == self.id)
 
 
 class Post(db.Model):
@@ -323,6 +262,7 @@ class Post(db.Model):
  
     def update(self, data):
         self.body = data['body']       
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -350,16 +290,27 @@ class Notification(db.Model):
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), index=True)
-    description = db.Column(db.String(128))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    name = db.Column(db.String(64), index=True)
+    description = db.Column(db.String(256))
     complete = db.Column(db.Boolean, default=False)
-
-    def get_id(self):
-        try:
-            return unicode(self.id)
-        except NameError:
-            return str(self.id)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    start_date = db.Column(db.DateTime, index=True)
+    due_date = db.Column(db.DateTime, index=True)
+    end_date = db.Column(db.DateTime, index=True)
+    last_update_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    url = db.Column(db.String(128))
+    input_data = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return '<Task %r>' % (self.name)
+
+        
+class Assignment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task = db.Column(db.Integer, db.ForeignKey('task.id'), index=True)
+    assignee = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    assigned = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return '<Assignment %r>' % (self.name)

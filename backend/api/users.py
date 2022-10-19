@@ -1,7 +1,7 @@
 from api import db
 from api.models import User, Post, Comment, Notification
 from api.schemas import UserSchema, UpdateUserSchema, EmptySchema,\
-    CommentSchema, PostSchema, NotificationSchema, DateTimePaginationSchema
+    CommentSchema, PostSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
 from api.posts import posts_schema

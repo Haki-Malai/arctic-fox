@@ -23,15 +23,6 @@ def all():
     return Post.query
 
 
-@posts.route('/<int:id>', methods=['GET'])
-@authenticate(token_auth)
-@response(post_schema)
-@other_responses({404: 'Post not found'})
-def get(id):
-    """Retrieve a post by id"""
-    return db.session.get(Post, id) or abort(404)
-
-
 @posts.route('/', methods=['POST'])
 @body(post_schema)
 @response(post_schema, 201)
@@ -43,6 +34,15 @@ def new(args):
     db.session.add(post)
     db.session.commit()
     return post
+
+
+@posts.route('/<int:id>')
+@authenticate(token_auth)
+@response(post_schema)
+@other_responses({404: 'Post not found'})
+def get(id):
+    """Retrieve a post by id"""
+    return db.session.get(Post, id) or abort(404)
 
 @posts.route('/<int:id>', methods=['PUT'])
 @authenticate(token_auth)
@@ -75,13 +75,14 @@ def delete(id):
     return '', 204
 
 
-@posts.route('/user/<int:id>')
+@posts.route('/comments/<int:id>')
 @authenticate(token_auth)
-@other_responses({404: 'User not found'})
-@paginated_response(posts_schema,
-                    order_by=Post.timestamp,
+@other_responses({404: 'Post not found'})
+@paginated_response(comments_schema,
+                    order_by=Comment.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
-def get_user(id):
-    """Retrieve an user's posts"""
-    return Post.query.filter_by(user_id=id)
+def get_post(id):
+    """Retrieve an post's comments"""
+    return Comment.query.filter_by(post_id=id) if db.session.get(Posts, id) \
+        else abort(404)

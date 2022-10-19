@@ -19,7 +19,7 @@ update_comment_schema = CommentSchema(partial=True)
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def all():
-    """Retrieve all comments."""
+    """Retrieve all notifications."""
     return Comment.query
 
 
@@ -73,29 +73,3 @@ def delete(id):
     db.session.delete(comment)
     db.session.commit()
     return '', 204
-
-
-@comments.route('/users/<int:id>')
-@authenticate(token_auth)
-@other_responses({404: 'User not found'})
-@paginated_response(comments_schema,
-                    order_by=Comment.timestamp,
-                    order_direction='desc',
-                    pagination_schema=DateTimePaginationSchema)
-def get_user(id):
-    """Retrieve an user's comments"""
-    return Comment.query.filter_by(user_id=id) if db.session.get(User, id) \
-        else abort(404)
-
-
-@comments.route('/posts/<int:id>')
-@authenticate(token_auth)
-@other_responses({404: 'Post not found'})
-@paginated_response(comments_schema,
-                    order_by=Comment.timestamp,
-                    order_direction='desc',
-                    pagination_schema=DateTimePaginationSchema)
-def get_post(id):
-    """Retrieve an post's comments"""
-    return Comment.query.filter_by(post_id=id) if db.session.get(Posts, id) \
-        else abort(404)

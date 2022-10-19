@@ -157,3 +157,29 @@ def followers(id):
     user = db.session.get(User, id) or abort(404)
     return user.followers
 
+
+@users.route('/posts/<int:id>')
+@authenticate(token_auth)
+@other_responses({404: 'User not found'})
+@paginated_response(posts_schema,
+                    order_by=Post.timestamp,
+                    order_direction='desc',
+                    pagination_schema=DateTimePaginationSchema)
+def get_user(id):
+    """Retrieve an user's posts"""
+    return Post.query.filter_by(user_id=id) if db.session.get(User, id)\
+        else abort(404)
+
+
+@comments.route('/comments/<int:id>')
+@authenticate(token_auth)
+@other_responses({404: 'User not found'})
+@paginated_response(comments_schema,
+                    order_by=Comment.timestamp,
+                    order_direction='desc',
+                    pagination_schema=DateTimePaginationSchema)
+def get_user(id):
+    """Retrieve an user's comments"""
+    return Comment.query.filter_by(user_id=id) if db.session.get(User, id) \
+        else abort(404)
+

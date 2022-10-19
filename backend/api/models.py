@@ -1,5 +1,5 @@
 from api.exceptions import ValidationError
-from .app import db
+from api.app import db
 import secrets
 from datetime import datetime, timedelta
 from hashlib import md5
@@ -336,13 +336,15 @@ class Comment(db.Model):
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
+    body = db.Column(db.Text)
+    seen = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    payload_json = db.Column(db.Text)
 
-    def get_data(self):
-        return json.loads(str(self.payload_json))
+    def __repr__(self):
+        return '<Notification {}>'.format(self.body)
 
 
 class Task(db.Model):

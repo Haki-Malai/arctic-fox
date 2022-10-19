@@ -1,10 +1,11 @@
-from flask import Blueprint, abort
-from apifairy import authenticate, body, response, other_responses
 from api import db
-from api.models import User, Post, Permission
-from api.schemas import PostSchema, DateTimePaginationSchema
+from api.models import Post, Comment
+from api.schemas import PostSchema, DateTimePaginationSchema, CommentSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
+from api.comments import comments_schema
+from flask import Blueprint, abort
+from apifairy import authenticate, body, response, other_responses
 
 posts = Blueprint('posts', __name__)
 post_schema = PostSchema()

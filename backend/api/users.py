@@ -1,9 +1,12 @@
 from api import db
-from api.models import User
-from api.schemas import UserSchema, UpdateUserSchema, EmptySchema, CommentSchema, PostSchema
+from api.models import User, Post, Comment, Notification
+from api.schemas import UserSchema, UpdateUserSchema, EmptySchema,\
+    CommentSchema, PostSchema, NotificationSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
-
+from api.posts import posts_schema
+from api.comments import comments_schema
+from api.notifications import notifications_schema
 from apifairy import authenticate, body, response
 from apifairy.decorators import other_responses
 from flask import Blueprint, abort
@@ -12,8 +15,6 @@ users = Blueprint('users', __name__)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema()
-comments_schema = CommentSchema(many=True)
-posts_schema = PostSchema(many=True)
 
 
 @users.route('/', methods=['GET'])
@@ -167,21 +168,30 @@ def followers(id):
                     order_by=Post.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
-def get_user(id):
+def get_user_posts(id):
     """Retrieve an user's posts"""
-    return Post.query.filter_by(user_id=id) if db.session.get(User, id)\
-        else abort(404)
+    return token_auth.current_user().posts
 
 
-@comments.route('/comments/<int:id>')
+@users.route('/comments')
 @authenticate(token_auth)
 @other_responses({404: 'User not found'})
 @paginated_response(comments_schema,
                     order_by=Comment.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
-def get_user(id):
+def get_user_comments():
     """Retrieve an user's comments"""
-    return Comment.query.filter_by(user_id=id) if db.session.get(User, id) \
-        else abort(404)
+    return token_auth.current_user().comments
 
+
+@users.route('/notifications')
+@authenticate(token_auth)
+@other_responses({404: 'User not found'})
+@paginated_response(notifications_schema,
+                    order_by=Notification.timestamp,
+                    order_direction='desc',
+                    pagination_schema=DateTimePaginationSchema)
+def get_user_notifications():
+    """Retrieve an user's notifications"""
+    return token_auth.current_user().notifications

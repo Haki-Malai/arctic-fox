@@ -1,9 +1,9 @@
+from config import config
 from flask import Flask, redirect, url_for
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from apifairy import APIFairy
-from config import config
 
 mail = Mail()
 db = SQLAlchemy()
@@ -32,6 +32,8 @@ def create_app(config_name):
     app.register_blueprint(posts, url_prefix='/api/posts')
     from api.comments import comments
     app.register_blueprint(comments, url_prefix='/api/comments')
+    from api.notifications import notifications
+    app.register_blueprint(notifications, url_prefix='/api/notification')
 
     @app.route('/')
     def index():  # pragma: no cover

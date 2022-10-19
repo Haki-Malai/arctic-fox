@@ -2,7 +2,7 @@ from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
 from api import ma, db
 from api.auth import token_auth
-from api.models import User, Post, Comment
+from api.models import User, Post, Comment, Notification
 
 paginated_schema_cache = {}
 
@@ -40,7 +40,7 @@ def PaginatedCollection(schema, pagination_schema=StringPaginationSchema):
         pagination = ma.Nested(pagination_schema)
         data = ma.Nested(schema, many=True)
 
-    PaginatedSchema.__name__ = 'Paginated{}'.format(schema.__class__.__name__)
+    PaginatedSchema.__name__ = f'Paginated{schema.__class__.__name__}'
     paginated_schema_cache[schema] = PaginatedSchema
     return PaginatedSchema
 
@@ -109,7 +109,7 @@ class CommentSchema(ma.SQLAlchemySchema):
         model = Comment
         ordered = True
 
-    id = ma.auto_field(dump_only=True)
+    id = ma.auto_field()
     body = ma.auto_field(required=True,\
         validate=validate.Length(min=1, max=140))
     timestamp = ma.auto_field(dump_only=True) 
@@ -121,6 +121,21 @@ class CommentSchema(ma.SQLAlchemySchema):
             int(value)
         except ValueError:
             raise ValueError(f'Post id must be an integer not {type(value)}')
+
+
+class NotificationSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Notification
+        ordered = True
+
+    id = ma.auto_field()
+    body = ma.auto_field(required=True,\
+        validate=validate.Length(min=1, max=140))
+    seen = ma.auto_field(dump_only=True)
+    timestamp = ma.auto_field(dump_only=True) 
+    post_id = ma.auto_field(dump_only=True)
+    comment_id = ma.auto_field(required=True)
+
 
 class TokenSchema(ma.Schema):
     class Meta:

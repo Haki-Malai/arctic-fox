@@ -1,10 +1,10 @@
 from flask import Blueprint, abort
-from apifairy import authenticate, body, response, other_responses
-from api import db
 from api.models import User, Post, Comment, Permission
 from api.schemas import CommentSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
+from apifairy import authenticate, body, response, other_responses
+from api import db
 
 comments = Blueprint('comments', __name__)
 comment_schema = CommentSchema()
@@ -19,7 +19,7 @@ update_comment_schema = CommentSchema(partial=True)
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def all():
-    """Retrieve all notifications."""
+    """Retrieve all comments."""
     return Comment.query
 
 

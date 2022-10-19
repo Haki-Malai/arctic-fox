@@ -1,9 +1,9 @@
+from api.app import db
+from api.schemas import StringPaginationSchema, PaginatedCollection
 from functools import wraps
 from flask import abort
 from apifairy import arguments, response
 from sqlalchemy.sql.expression import desc
-from api.app import db
-from api.schemas import StringPaginationSchema, PaginatedCollection
 
 
 def paginated_response(schema, max_limit=25, order_by=None,

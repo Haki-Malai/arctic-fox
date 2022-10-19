@@ -14,7 +14,7 @@ def test(patern, verbosity):
     unittest.TextTestRunner(verbosity=verbosity).run(tests)
 
 @run_script.cli.command('fake-data')
-def fake(fake):
+def fake():
     from api.app import db
     db.drop_all()
     db.create_all()
@@ -22,6 +22,7 @@ def fake(fake):
         fake_comments, fake_follows, fake_notifications, fake_tasks
     fake_admins()
     fake_users()
+    fake_follows()
     fake_posts()
     fake_comments()
     fake_tasks()

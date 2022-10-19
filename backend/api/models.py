@@ -8,6 +8,19 @@ from flask import current_app, url_for
 from flask_login import UserMixin, AnonymousUserMixin
 from time import time
 import jwt
+        
+assignment = db.Table(
+    'assignment',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
+    db.Column('assignee_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('assigned_id', db.Integer, db.ForeignKey('user.id')),
+)
+
+follower = db.Table(
+    'follower',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
 
 
 class Token(db.Model):
@@ -44,18 +57,6 @@ class Token(db.Model):
         Token.query.filter(Token.refresh_expiration < yesterday).delete()
 
 
-class Follow(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    follower = db.Column(db.Integer, db.ForeignKey('user.id'),
-                            index=True)
-    followed = db.Column(db.Integer, db.ForeignKey('user.id'),
-                            index=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return '<Follow %r %r>' % (self.follower, self.followed)
-
-
 class User(UserMixin, db.Model):
     """
     A class to represent a user.
@@ -85,6 +86,30 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='user', lazy='dynamic')
     comments = db.relationship('Comment', backref='user', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
+    tasks = db.relationship(
+        'Task',
+        secondary=assignment,
+        primaryjoin=(assignment.c.assignee_id == id),
+        secondaryjoin=(assignment.c.assigned_id == id),
+        lazy='dynamic')
+    following = db.relationship(
+        'User',
+        cascade="all, delete-orphan",
+        single_parent=True,
+        secondary=follower,
+        primaryjoin=(follower.c.follower_id == id),
+        secondaryjoin=(follower.c.followed_id == id),
+        back_populates='followers',
+        lazy='dynamic')
+    followers = db.relationship(
+        'User',
+        cascade="all, delete-orphan",
+        single_parent=True,
+        secondary=follower,
+        primaryjoin=(follower.c.followed_id == id),
+        secondaryjoin=(follower.c.follower_id == id),
+        back_populates='following',
+        lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -199,20 +224,21 @@ class User(UserMixin, db.Model):
 
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self.id, followed=user.id)
-            db.session.add(f)
-            return True
+            db.session.execute(
+                follower.insert().values(
+                    follower_id=self.id,
+                    followed_id=user.id)
+            )
 
     def unfollow(self, user):
-        f = self.following.filter_by(followed=user.id).first()
-        if f:
-            db.session.delete(f)
-            return True
+        if self.is_following(user):
+            db.session.execute(
+                follower.delete().where(
+                follower.c.follower_id == self.id,
+                follower.c.followed_id == user.id))
 
     def is_following(self, user):
-        if user.id is None:
-            return False
-        return self.following.filter_by(followed=user.id).first() is not None
+        return user in self.following 
     
     def is_following_by(self, user):
         if user.id is None:
@@ -220,34 +246,19 @@ class User(UserMixin, db.Model):
         return self.followers.filter_by(
             follower=user.id).first() is not None
 
-    @property
-    def followers(self):
-        return User.query.join(Follow, Follow.follower == User.id)\
-            .filter(Follow.followed == self.id)
-
-    @property
-    def following(self):
-        return User.query.join(Follow, Follow.followed == User.id)\
-            .filter(Follow.follower == self.id)
-
-    @property
-    def following_posts(self):
-        return Post.query.join(Follow, Follow.followed == Post.user_id)\
-            .filter(Follow.follower == self.id)
-
     def add_notification(self, name, data):
         self.notifications.filter_by(name=name).delete()
         n = Notification(name=name, payload_json=json.dumps(data), user=self)
         db.session.add(n)
         return n
 
-    def get_tasks(self):
-        return Task.query.join(Assignment, Assignment.task == Task.id)\
-            .filter(Assignment.assigned == self.id)
+    @property
+    def assigned_tasks(self):
+        return self.tasks.filter_by(assigned_id=self.id)
 
-    def get_tasks_as_assignee(self):
-        return Task.query.join(Assignment, Assignment.task == Task.id)\
-            .filter(Assignment.assignee == self.id)
+    @property
+    def assigneed_tasks(self):
+        return self.tasks.filter_by(assignee_id=self.id)
 
 
 class Post(db.Model):
@@ -290,7 +301,8 @@ class Notification(db.Model):
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
+    name = db.Column(db.String(16), index=True)
+    value = db.Column(db.Float)
     description = db.Column(db.String(256))
     complete = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
@@ -300,17 +312,16 @@ class Task(db.Model):
     last_update_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     url = db.Column(db.String(128))
     input_data = db.Column(db.LargeBinary)
+    assignee_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    assigned_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    assignee = db.relationship(
+        'User',
+        back_populates='tasks',
+        foreign_keys=[assignee_id])
+    assigned = db.relationship(
+        'User',
+        back_populates='tasks',
+        foreign_keys=[assigned_id])
 
     def __repr__(self):
         return '<Task %r>' % (self.name)
-
-        
-class Assignment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    task = db.Column(db.Integer, db.ForeignKey('task.id'), index=True)
-    assignee = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
-    assigned = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-
-    def __repr__(self):
-        return '<Assignment %r>' % (self.name)

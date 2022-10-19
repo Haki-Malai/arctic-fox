@@ -2,7 +2,7 @@ from random import randint
 from sqlalchemy.exc import IntegrityError
 from faker import Faker
 from . import db
-from .models import User, Post, Follow, Comment, Notification, Task, Assignment
+from api.models import User, Post, follower, Comment, Notification, Task, assignment
 from flask import current_app
 
 
@@ -60,11 +60,10 @@ def fake_follows(count=100):
     for i in range(count):
         u1 = User.query.offset(randint(0, user_count - 1)).first()
         u2 = User.query.offset(randint(0, user_count - 1)).first()
-        f = Follow(
-            follower=u1.id,
-            followed=u2.id
-        )
-        db.session.add(f)
+        db.session.execute(follower.insert().values(
+            follower_id=u1.id,
+            followed_id=u2.id
+        ))
         try:
             db.session.commit()
         except IntegrityError:
@@ -132,17 +131,18 @@ def fake_tasks(count=50):
         assignee = User.query.offset(randint(0, user_count - 1)).first()
         assigned = User.query.offset(randint(0, user_count - 1)).first()
         t = Task(
-            name=fake.text(),
+            name=fake.bs(),
             timestamp=fake.past_date(),
             due_date=fake.future_date(),
+            assignee_id=assignee.id,
+            assigned_id=assigned.id,
         )
+        db.session.execute(assignment.insert().values(
+            task_id=t.id,
+            assignee_id=assignee.id,
+            assigned_id=assigned.id,
+        ))
         db.session.add(t)
-        a = Assignment(
-            task=t.id,
-            assignee=assignee.id,
-            assigned=assigned.id,
-        )
-        db.session.add(a)
         try:
             db.session.commit()
         except IntegrityError:

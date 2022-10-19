@@ -1,7 +1,7 @@
 import os
 from api import create_app, db, cli
-from api.models import User, Follow, Post, Comment, Notification,\
-    Task, Notification
+from api.models import User, follower, Post, Comment, \
+    Notification, Task, assignment
 
 app = create_app(os.environ.get('FLASK_CONFIG', 'default'))
 
@@ -19,5 +19,5 @@ def make_shell_context():
         fake_posts()
         fake_comments()
         fake_tasks()
-    return dict(db=db, User=User, Follow=Follow, Post=Post, Comment=Comment,\
+    return dict(db=db, User=User, follower=follower, Post=Post, Comment=Comment,\
         Notification=Notification, Task=Task, Notificatin=Notification)

@@ -1,5 +1,6 @@
 from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
+import requests
 from api import ma, db
 from api.auth import token_auth
 from api.models import User, Post, Comment, Notification, Task
@@ -158,6 +159,19 @@ class TaskSchema(ma.SQLAlchemySchema):
     url = ma.auto_field()
     input_data = ma.auto_field()
     assignee_id = ma.auto_field()
+    txid = ma.auto_field(required=True)
+    transaction_status = ma.Integer(dump_only=True)
+    transaction_amount = ma.Float(dump_only=True)
+
+    @validates('txid')
+    def validate_txid(self, txid):
+        res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + txid)
+        if res.status_code != 200:
+            raise ValidationError('Invalid transaction id')
+        assigned_id = assignment.select().where(assignment.c.task_id == self.id).first()
+        user = db.session.get(User, assigned_id)
+        if user.bitcoin_address not in res.json()['addresses']:
+            raise ValidationError('Transaction does not match assigned user')
 
 
 class TokenSchema(ma.Schema):

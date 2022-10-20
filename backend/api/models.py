@@ -6,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app
 from time import time
 import jwt
+import requests
+import pickle
 
 
 class Updateable:
@@ -23,10 +25,6 @@ follower = db.Table(
     'follower',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-)
-
-pays = db.Table(
-    'payment',
 )
 
 
@@ -306,6 +304,7 @@ class Task(Updateable, db.Model):
     last_update_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     url = db.Column(db.String(128))
     input_data = db.Column(db.String(512))
+    txid = db.Column(db.String(128), db.CheckConstraint('txid IS NULL OR length(txid) = 64'))
     assignee_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     assignee = db.relationship(
         'User',
@@ -329,3 +328,17 @@ class Task(Updateable, db.Model):
 
     def ping(self):
         self.last_update_date = datetime.utcnow()
+
+    @property
+    def transaction_status(self):
+        if self.txid is None:
+            return None
+        res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + self.txid).json()
+        return self.res['confirmations'] or None
+
+    @property
+    def transaction_amount(self):
+        if self.txid is None:
+            return None
+        res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + self.txid).json()
+        return float(self.res['total']) * 0.00000001 or None

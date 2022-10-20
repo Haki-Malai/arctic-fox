@@ -9,6 +9,7 @@ mail = Mail()
 db = SQLAlchemy()
 apifairy = APIFairy()
 ma = Marshmallow()
+mail = Mail()
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -20,8 +21,9 @@ def create_app(config_name):
     # Initialize extensions
     db.init_app(app)
     mail.init_app(app)
-    apifairy.init_app(app)
     ma.init_app(app)
+    mail.init_app(app)
+    apifairy.init_app(app)
 
     # Import blueprints
     from api.errors import errors

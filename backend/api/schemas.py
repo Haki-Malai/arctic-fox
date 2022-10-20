@@ -198,6 +198,6 @@ class PasswordResetSchema(ma.Schema):
     new_password = ma.String(required=True, validate=validate.Length(min=3))
 
     
-class ConfirmSchema(ma.Schema):
+class ConfirmationSchema(ma.Schema):
     
     token = ma.String(required=True)

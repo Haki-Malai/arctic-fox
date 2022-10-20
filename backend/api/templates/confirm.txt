@@ -1,0 +1,13 @@
+Hi {{ username }}
+
+Thanks for creating an account on our platform.
+
+Please verify your email address by following the link bellow.
+
+{{ url }}
+
+Click here to verify email address!
+
+The Arctic Fox Team
+
+Note: replies to this email address are not monitored.

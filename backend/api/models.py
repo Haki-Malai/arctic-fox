@@ -1,4 +1,5 @@
 from api.app import db
+from api.email import send_email
 import secrets
 from datetime import datetime, timedelta
 from hashlib import md5
@@ -130,8 +131,8 @@ class User(Updateable, db.Model):
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
         self.follow(self)
-        send_email(args['email'], 'Confirm Account', 'confirm',
-                   token=self.generate_confirm_token(), url=reset_url)
+        send_email(kwargs['email'], 'Confirm Account', 'confirm',
+                   token=self.generate_confirm_token(), url=f'/tokens/confirm?={self.generate_confirm_token()}')
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
@@ -184,7 +185,7 @@ class User(Updateable, db.Model):
 
     def generate_confirm_token(self):
         return jwt.encode(
-            {'confirm': self.id, 'exp': time() + expiration},
+            {'confirm': self.id},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
     @staticmethod

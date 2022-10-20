@@ -130,6 +130,8 @@ class User(Updateable, db.Model):
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
         self.follow(self)
+        send_email(args['email'], 'Confirm Account', 'confirm',
+                   token=self.generate_confirm_token(), url=reset_url)
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
@@ -185,14 +187,14 @@ class User(Updateable, db.Model):
             {'confirm': self.id, 'exp': time() + expiration},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    def confirm(self, reset_token):
+    @staticmethod
+    def verify_confirm_token(reset_token):
         try:
             email = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
                               algorithms=['HS256'])['email']
         except jwt.PyJWTError:
-            return
-        self.confirmed = self.email == email
-        return self.confirmed
+            return None
+        return db.session.scalar(User.select().filter_by(email=email))
 
     def generate_reset_token(self, expiration=3600):
         return jwt.encode(
@@ -202,12 +204,11 @@ class User(Updateable, db.Model):
     @staticmethod
     def verify_reset_token(reset_token):
         try:
-            data = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
-                              algorithms=['HS256'])
+            id = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
+                              algorithms=['HS256'])['reset']
         except jwt.PyJWTError:
             return
-        return db.session.scalar(User.select().filter_by(
-            email=data['reset_email']))
+        return db.session.scalar(User.select().filter_by(id=id))
 
     def ping(self):
         self.last_seen = datetime.utcnow()

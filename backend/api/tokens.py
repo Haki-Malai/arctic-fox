@@ -6,7 +6,7 @@ from api.app import db
 from api.auth import basic_auth, token_auth
 from api.models import User, Token
 from api.schemas import TokenSchema, PasswordResetRequestSchema, \
-    PasswordResetSchema, EmptySchema
+    PasswordResetSchema, EmptySchema, ConfirmSchema
 from api.email import send_email
 
 tokens = Blueprint('tokens', __name__)
@@ -98,5 +98,22 @@ def password_reset(args):
     if user is None:
         abort(400)
     user.password = args['new_password']
+    user.ping()
+    db.session.commit()
+    return {}
+
+
+@tokens.route('/confirm', methods=['PUT'])
+@body(ConfirmationSchema)
+@response(EmptySchema, status_code=204,
+          description='Password reset successful')
+@other_responses({400: 'Invalid reset token'})
+def password_reset(args):
+    """Reset a user password"""
+    user = User.verify_confirm_token(args['token'])
+    if user is None:
+        abort(400)
+    user.confirmed = True    
+    user.ping()
     db.session.commit()
     return {}

@@ -54,7 +54,7 @@ class Token(db.Model):
         Token.query.filter(Token.refresh_expiration < yesterday).delete()
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):
     """
     A class to represent a user.
     

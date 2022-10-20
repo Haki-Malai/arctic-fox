@@ -59,6 +59,7 @@ class UserSchema(ma.SQLAlchemySchema):
     location = ma.auto_field(dump_only=True)
     avatar_hash = ma.auto_field(dump_only=True)
     member_since = ma.auto_field(dump_only=True)
+    bitcoin_address = ma.auto_field()
 
     @validates('username')
     def validate_username(self, value):
@@ -143,10 +144,12 @@ class TaskSchema(ma.SQLAlchemySchema):
         ordered = True
 
     id = ma.auto_field()
-    name = ma.auto_field(dump_only=True)
+    name = ma.auto_field(load_only=True,\
+        validate=validate.Length(min=8, max=140))
+    description = ma.auto_field(load_only=True,\
+        validate=validate.Length(min=8, max=140))
     value = ma.auto_field()
-    description = ma.auto_field()
-    complete = ma.auto_field(dump_only=True)
+    complete = ma.auto_field()
     timestamp = ma.auto_field(dump_only=True)
     start_date = ma.auto_field(dump_only=True)
     due_date = ma.auto_field()
@@ -154,6 +157,7 @@ class TaskSchema(ma.SQLAlchemySchema):
     last_update_date = ma.auto_field(dump_only=True)
     url = ma.auto_field()
     input_data = ma.auto_field()
+    assignee_id = ma.auto_field()
 
 
 class TokenSchema(ma.Schema):

@@ -196,13 +196,3 @@ def get_user_comments():
 def get_user_notifications():
     """Retrieve the notifications of an user"""
     return token_auth.current_user().notifications
-
-
-@users.route('/tasks')
-@authenticate(token_auth)
-@paginated_response(tasks_schema,
-                    order_by=Task.timestamp,
-                    pagination_schema=DateTimePaginationSchema)
-def get_user_tasks():
-    """Retrieve tasks from authenticated user."""
-    return token_auth.current_user().tasks

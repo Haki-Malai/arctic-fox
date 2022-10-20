@@ -6,17 +6,27 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app
 from time import time
 import jwt
+
+
+class Updateable:
+    def update(self, data):
+        for attr, value in data.items():
+            setattr(self, attr, value)
         
-assigns = db.Table(
+assignment = db.Table(
     'assignment',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('assignee_id', db.Integer, db.ForeignKey('user.id'))
+    db.Column('assigned_id', db.Integer, db.ForeignKey('user.id'))
 )
 
 follower = db.Table(
     'follower',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+pays = db.Table(
+    'payment',
 )
 
 
@@ -54,7 +64,7 @@ class Token(db.Model):
         Token.query.filter(Token.refresh_expiration < yesterday).delete()
 
 
-class User(db.Model):
+class User(Updateable, db.Model):
     """
     A class to represent a user.
     
@@ -74,6 +84,7 @@ class User(db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    bitcoin_address = db.Column(db.String(128), index=True)
     name = db.Column(db.String(64))
     location = db.Column(db.String(64))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
@@ -91,12 +102,12 @@ class User(db.Model):
     notifications = db.relationship('Notification',
         backref='user',
         lazy='dynamic')
-    assigned_tasks = db.relationship('Task', 
+    assigneed_tasks = db.relationship('Task', 
         backref='user',
         lazy='dynamic')
-    assigneed_tasks = db.relationship('Task',
-        secondary=assigns,
-        primaryjoin=(assigns.c.assignee_id == id),
+    assigned_tasks = db.relationship('Task',
+        secondary=assignment,
+        primaryjoin=(assignment.c.assigned_id == id),
         lazy='dynamic')
     following = db.relationship('User',
         secondary=follower,
@@ -124,14 +135,6 @@ class User(db.Model):
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
-
-    def update(self, data):
-        if 'username' in data:
-            self.username = data['username']
-        if 'email' in data:
-            self.email = data['email']
-        if 'name' in data:
-            self.name = data['name']
 
     @property
     def password(self):
@@ -290,7 +293,7 @@ class Notification(db.Model):
         return '<Notification {}>'.format(self.body)
 
 
-class Task(db.Model):
+class Task(Updateable, db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(16), index=True)
     value = db.Column(db.Float)
@@ -302,13 +305,27 @@ class Task(db.Model):
     end_date = db.Column(db.DateTime, index=True)
     last_update_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     url = db.Column(db.String(128))
-    input_data = db.Column(db.LargeBinary)
-    assigned_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    assigned = db.relationship(
+    input_data = db.Column(db.String(512))
+    assignee_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    assignee = db.relationship(
         'User',
         single_parent=True,
-        overlaps='assigned_tasks,user',
-        foreign_keys=[assigned_id])
+        overlaps='assigneed_tasks,user',
+        foreign_keys=[assignee_id])
 
     def __repr__(self):
         return '<Task %r>' % (self.name)
+
+    def start(self, user_id):
+        db.session.execute(
+            assignment.insert().values(
+                task_id=self.id,
+                assigned_id=user_id
+            )
+        )
+        self.start_date = datetime.utcnow()
+        self.last_update_date = datetime.utcnow()
+        db.session.commit()
+
+    def ping(self):
+        self.last_update_date = datetime.utcnow()

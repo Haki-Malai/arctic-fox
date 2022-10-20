@@ -2,7 +2,7 @@ import os
 import click
 from flask import Blueprint
 
-run_script = Blueprint('run_script', __name__)
+run_script = Blueprint('script', __name__)
 
 
 @run_script.cli.command('test')
@@ -13,14 +13,13 @@ def test(patern, verbosity):
     tests = unittest.TestLoader().discover('tests', patern)
     unittest.TextTestRunner(verbosity=verbosity).run(tests)
 
-@run_script.cli.command('fake-data')
+@run_script.cli.command('fake')
 def fake():
     from api.app import db
     db.drop_all()
     db.create_all()
-    from api.fake import fake_admins, fake_users, fake_posts,\
+    from api.fake import fake_users, fake_posts,\
         fake_comments, fake_follows, fake_notifications, fake_tasks
-    fake_admins()
     fake_users()
     fake_follows()
     fake_posts()

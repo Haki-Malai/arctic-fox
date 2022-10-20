@@ -2,49 +2,34 @@ from random import randint
 from sqlalchemy.exc import IntegrityError
 from faker import Faker
 from . import db
-from api.models import User, Post, follower, Comment, Notification, Task, assigns
+from api.models import User, Post, follower, Comment, Notification, Task, assignment
 from flask import current_app
 
 
-def fake_admins(count=2):
-    fake = Faker()
-    print('Generating fake admins...')
-    for i in range(count):
-        u = User(
+def fake_users(count=10):
+    u = User(
+            username='useruser',
+            password='12345678',
             email=fake.email(),
-            username=fake.user_name(),
-            password='password',
+            bitcoin_address=fake.md5(),
             confirmed=True,
             name=fake.name(),
             location=fake.city(),
-            member_since=fake.past_date(),
-            role='admin'
-        )
-        db.session.add(u)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-    u = User(username='useruser', password='password',\
-        email='test1@test.gr', role='admin')
+            member_since=fake.past_date())
     db.session.add(u)
-    db.session.commit()
-    print('Created default user: useruser')
-
-
-def fake_users(count=10):
+    print('Default admin: "useruser"')
     fake = Faker()
     print('Generating fake users...')
     for i in range(count):
         u = User(
-            email=fake.email(),
             username=fake.user_name(),
+            email=fake.email(),
+            bitcoin_address=fake.md5(),
             password='password',
             confirmed=True,
             name=fake.name(),
             location=fake.city(),
-            member_since=fake.past_date()
-        )
+            member_since=fake.past_date())
         db.session.add(u)
         try:
             db.session.commit()
@@ -128,19 +113,22 @@ def fake_tasks(count=50):
     user_count = User.query.filter_by(role='admin').count()
     print('Generating fake tasks...')
     for i in range(count):
-        assignee = User.query.offset(randint(0, user_count - 1)).first()
-        assigned = User.query.offset(randint(0, user_count - 1)).first()
+        assigneed_from = User.query.offset(randint(0, user_count - 1)).first()
+        assigned_to = User.query.offset(randint(0, user_count - 1)).first()
         t = Task(
             name=fake.bs(),
+            description=fake.text(),
+            value=float(fake.pricetag().replace('$', '').replace(',', '')),
+            url=fake.url(),
             timestamp=fake.past_date(),
             due_date=fake.future_date(),
-            assigned_id=assigned.id,
+            assignee_id=assigned_to.id,
         )
         db.session.add(t)
         db.session.commit()
-        db.session.execute(assigns.insert().values(
+        db.session.execute(assignment.insert().values(
             task_id=t.id,
-            assignee_id=assignee.id,
+            assigned_id=assigneed_from.id,
         ))
         try:
             db.session.commit()

@@ -7,6 +7,7 @@ from flask import current_app
 
 
 def fake_users(count=10):
+    fake = Faker()
     u = User(
             username='useruser',
             password='12345678',
@@ -18,7 +19,6 @@ def fake_users(count=10):
             member_since=fake.past_date())
     db.session.add(u)
     print('Default admin: "useruser"')
-    fake = Faker()
     print('Generating fake users...')
     for i in range(count):
         u = User(

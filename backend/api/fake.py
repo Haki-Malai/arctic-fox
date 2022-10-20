@@ -33,7 +33,6 @@ def fake_users(count=10):
         db.session.add(u)
         try:
             db.session.commit()
-            i += 1
         except IntegrityError:
             db.session.rollback()
 
@@ -110,7 +109,7 @@ def fake_notifications(count=50):
     
 def fake_tasks(count=50):
     fake = Faker()
-    user_count = User.query.filter_by(role='admin').count()
+    user_count = User.query.filter_by().count()
     print('Generating fake tasks...')
     for i in range(count):
         assigneed_from = User.query.offset(randint(0, user_count - 1)).first()
@@ -122,13 +121,13 @@ def fake_tasks(count=50):
             url=fake.url(),
             timestamp=fake.past_date(),
             due_date=fake.future_date(),
-            assignee_id=assigned_to.id,
+            assignee_id=assigneed_from.id,
         )
         db.session.add(t)
         db.session.commit()
         db.session.execute(assignment.insert().values(
             task_id=t.id,
-            assigned_id=assigneed_from.id,
+            assigned_id=assigned_to.id,
         ))
         try:
             db.session.commit()

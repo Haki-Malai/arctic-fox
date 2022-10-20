@@ -1,15 +1,15 @@
-from . import mail
+from api.app import mail
 from threading import Thread
-from flask import current_app, render_template
+from flask import current_app
 from flask_mail import Message
 
 
 def send_async_email(app, msg):
-    with app.app_context():
+    with app.app_context():  # pragma: no cover
         mail.send(msg)
 
         
-def send_email(to, subject, template, **kwargs):
+def send_email(to, subject, template, **kwargs):  # pragma: no cover
     app = current_app._get_current_object()
     msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + subject,
                   sender=app.config['MAIL_SENDER'], recipients=[to])

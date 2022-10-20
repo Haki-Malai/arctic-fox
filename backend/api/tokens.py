@@ -7,6 +7,7 @@ from api.auth import basic_auth, token_auth
 from api.models import User, Token
 from api.schemas import TokenSchema, PasswordResetRequestSchema, \
     PasswordResetSchema, EmptySchema
+from api.email import send_email
 
 tokens = Blueprint('tokens', __name__)
 token_schema = TokenSchema()
@@ -72,7 +73,8 @@ def revoke():
 
 @tokens.route('/reset', methods=['POST'])
 @body(PasswordResetRequestSchema)
-@response(EmptySchema, status_code=204, description='Password reset email sent')
+@response(EmptySchema, status_code=204,
+    description='Password reset email sent')
 def reset(args):
     """Request a password reset token"""
     user = User.query.filter_by(email=args['email']).first()
@@ -82,4 +84,19 @@ def reset(args):
             '?token=' + reset_token
         send_email(args['email'], 'Reset Your Password', 'reset',
                    token=reset_token, url=reset_url)
-    return {"test": "email_send (supposedly)"}
+    return {}
+
+
+@tokens.route('/reset', methods=['PUT'])
+@body(PasswordResetSchema)
+@response(EmptySchema, status_code=204,
+          description='Password reset successful')
+@other_responses({400: 'Invalid reset token'})
+def password_reset(args):
+    """Reset a user password"""
+    user = User.verify_reset_token(args['token'])
+    if user is None:
+        abort(400)
+    user.password = args['new_password']
+    db.session.commit()
+    return {}

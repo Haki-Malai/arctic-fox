@@ -25,9 +25,9 @@ def paginated_response(schema, max_limit=25, order_by=None,
                 count = query.count()
                 limit = pagination.get('limit', max_limit)
                 if limit > max_limit:
-                    limit = max_limit
+                    query = query.limit(max_limit)
+                else:
                     query = query.limit(limit)
-                    query = query.filter(order_condition)
 
                 data = query.all()
                 return {

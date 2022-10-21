@@ -3,23 +3,29 @@ from flask import Flask, redirect, url_for
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
 from apifairy import APIFairy
 
 db = SQLAlchemy()
 apifairy = APIFairy()
 ma = Marshmallow()
 mail = Mail()
+cors = CORS()
 
 def create_app(config_name):
     app = Flask(__name__)
-    from api.cli import run_script
-    app.register_blueprint(run_script)
+    app.url_map.strict_slashes = False
+    # Register cli commands
+    from api.cli import script
+    app.register_blueprint(script)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
     # Initialize extensions
     db.init_app(app)
     ma.init_app(app)
+    if app.config['USE_CORS']:
+        cors.init_app(app)
     apifairy.init_app(app)
     mail.init_app(app)
     app.extensions['mail'].suppress = True

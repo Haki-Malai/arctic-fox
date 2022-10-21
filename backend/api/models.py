@@ -195,7 +195,7 @@ class User(Updateable, db.Model):
                               algorithms=['HS256'])['email']
         except jwt.PyJWTError:
             return None
-        return db.session.scalar(User.select().filter_by(email=email))
+        return db.session.scalar(User.query.filter_by(email=email))
 
     def generate_reset_token(self, expiration=3600):
         return jwt.encode(
@@ -209,7 +209,7 @@ class User(Updateable, db.Model):
                               algorithms=['HS256'])['reset']
         except jwt.PyJWTError:
             return
-        return db.session.scalar(User.select().filter_by(id=id))
+        return db.session.scalar(User.query.filter_by(id=id))
 
     def ping(self):
         self.last_seen = datetime.utcnow()

@@ -14,11 +14,20 @@ token_schema = TokenSchema()
 
 
 def token_response(token):
+    headers = {}
+    if current_app.config['REFRESH_TOKEN_IN_COOKIE']:
+        samesite = 'strict'
+        if current_app.config['USE_CORS']:  # pragma: no branch
+            samesite = 'none' if not current_app.debug else 'lax'
+        headers['Set-Cookie'] = dump_cookie(
+            'refresh_token', token.refresh_token,
+            path=url_for('tokens.new'), secure=not current_app.debug,
+            httponly=True, samesite=samesite)
     return {
         'access_token': token.access_token,
         'refresh_token': token.refresh_token
-        #if current_app.config['REFRESH_TOKEN_IN_BODY'] else None,
-    }, 200
+        if current_app.config['REFRESH_TOKEN_IN_BODY'] else None,
+    }, 200, headers
 
 
 @tokens.route('/', methods=['POST'])
@@ -80,8 +89,7 @@ def reset(args):
     user = User.query.filter_by(email=args['email']).first()
     if user is not None:
         reset_token = user.generate_reset_token()
-        reset_url = current_app.config['PASSWORD_RESET_URL'] + \
-            '?token=' + reset_token
+        reset_url = f'{request.host}/api/reset?token={reset_token}'
         send_email(args['email'], 'Reset Your Password', 'reset',
                    token=reset_token, url=reset_url)
     return {}
@@ -103,14 +111,14 @@ def password_reset(args):
     return {}
 
 
-@tokens.route('/confirm', methods=['PUT'])
+@tokens.route('/confirm/<token>')
 @body(ConfirmationSchema)
 @response(EmptySchema, status_code=204,
-          description='Password reset successful')
-@other_responses({400: 'Invalid reset token'})
-def user_confirm(args):
+          description='Account confirmation successful')
+@other_responses({400: 'Invalid confirm token'})
+def user_confirm(token):
     """Reset a user password"""
-    user = User.verify_confirm_token(args['token'])
+    user = User.verify_confirm_token(token)
     if user is None:
         abort(400)
     user.confirmed = True    

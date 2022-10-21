@@ -1,3 +1,4 @@
+from api.app import apifairy
 from flask import Blueprint, current_app
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.exceptions import HTTPException, InternalServerError
@@ -7,15 +8,15 @@ errors = Blueprint('errors', __name__)
 
 @errors.app_errorhandler(HTTPException)
 def http_error(error):
-    return {
+    return jsonify({
         'code': error.code,
         'message': error.name,
         'description': error.description,
-    }, error.code
+    }), error.code
 
 
 @errors.app_errorhandler(IntegrityError)
-def sqlalchemy_integrity_error(error):
+def sqlalchemy_integrity_error(error):  # pragma: no cover
     return {
         'code': 400,
         'message': 'Database integrity error',
@@ -37,3 +38,14 @@ def sqlalchemy_error(error):  # pragma: no cover
             'message': InternalServerError().name,
             'description': InternalServerError.description,
         }, 500
+
+
+@apifairy.error_handler
+def validation_error(code, messages):  # pragma: no cover
+    return {
+        'code': code,
+        'message': 'Validation Error',
+        'description': ('The server found one or more errors in the '
+                        'information that you sent.'),
+        'errors': messages,
+    }, code

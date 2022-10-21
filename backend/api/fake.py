@@ -9,8 +9,8 @@ from flask import current_app
 def fake_users(count=10):
     fake = Faker()
     u = User(
-            username='useruser',
-            password='12345678',
+            username='username',
+            password='password',
             email=current_app.config['MAIL_FOR_TEST_OR_DEBUG'],
             bitcoin_address=fake.md5(),
             confirmed=True,

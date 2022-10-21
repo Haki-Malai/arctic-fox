@@ -2,18 +2,19 @@ import os
 import click
 from flask import Blueprint
 
-run_script = Blueprint('script', __name__)
+script = Blueprint('script', __name__)
 
 
-@run_script.cli.command('test')
-@click.option('--patern', default='test*.py')
+@script.cli.command('test')
+@click.argument('patern', default='*')
 @click.option('--verbosity', default=2, type=int)
 def test(patern, verbosity):
     import unittest
+    patern = f'test_{patern}*.py'
     tests = unittest.TestLoader().discover('tests', patern)
     unittest.TextTestRunner(verbosity=verbosity).run(tests)
 
-@run_script.cli.command('fake')
+@script.cli.command('fake')
 def fake():
     from api.app import db
     db.drop_all()

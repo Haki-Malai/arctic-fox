@@ -5,6 +5,7 @@ class Config:
     # Flask
     SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "default-secret-key")
     UPLOAD_FOLDER = os.path.join(basedir, 'static/uploads')
+    USE_CORS = True
     # SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Custom
@@ -31,7 +32,7 @@ class Config:
     REFRESH_TOKEN_IN_COOKIE = False
     ACCESS_TOKEN_MINUTES = 30
     REFRESH_TOKEN_DAYS = 30
-    REFRESH_TOKEN_IN_BODY = False
+    REFRESH_TOKEN_IN_BODY = True
 
     @staticmethod
     def init_app(app):
@@ -39,17 +40,14 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-    DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL", \
         "sqlite:///" + os.path.join(basedir, "dev-data.sqlite"))
-    SESSION_COOKIE_SECURE = False
-    SESSION_PERMAMENT = True
     ACCESS_TOKEN_MINUTES = 30000
-    REFRESH_TOKEN_DAYS = 30000
-    
+    REFRESH_TOKEN_DAYS = 300
+
 
 class TestingConfig(Config):
-    TESTING = True
+    FLASK_RUN_PORT = "5001"
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", \
         "sqlite:///" + os.path.join(basedir, "test-data.sqlite"))
 

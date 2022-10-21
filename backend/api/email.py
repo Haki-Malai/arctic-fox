@@ -6,10 +6,8 @@ from flask_mail import Message
 
 def send_async_email(app, msg):
     with app.app_context():  # pragma: no cover
-        print('Sending email to %s' % msg.recipients[0])
         try:
             mail.send(msg)
-            print('Email sent to %s' % msg.recipients[0])
         except Exception as e:
             print('Failed to send email to %s' % msg.recipients[0])
 

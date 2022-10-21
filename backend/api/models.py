@@ -130,9 +130,11 @@ class User(Updateable, db.Model):
             self.role = 'admin'
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
-        self.follow(self)
-        send_email(kwargs['email'], 'Confirm Account', 'confirm',
-                   token=self.generate_confirm_token(), url=f'/tokens/confirm?={self.generate_confirm_token()}')
+        send_email(to=kwargs['email'],
+                   subject='Confirm Account',
+                   template='confirm', user=self,
+                   token=self.generate_confirm_token(),
+                   url=f'/tokens/confirm?={self.generate_confirm_token()}')
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
@@ -185,7 +187,7 @@ class User(Updateable, db.Model):
 
     def generate_confirm_token(self):
         return jwt.encode(
-            {'confirm': self.id},
+            {'email': self.email},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
     @staticmethod
@@ -240,7 +242,7 @@ class User(Updateable, db.Model):
                 follower.c.followed_id == user.id))
 
     def is_following(self, user):
-        return user in self.following 
+        return user in self.following or user == self
     
     def is_following_by(self, user):
         if user.id is None:

@@ -47,7 +47,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    FLASK_RUN_PORT = "5001"
+    FLASK_RUN_PORT = 5001
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", \
         "sqlite:///" + os.path.join(basedir, "test-data.sqlite"))
 

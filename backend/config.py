@@ -8,19 +8,19 @@ class Config:
     # SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Custom
-    ADMIN = os.environ.get("ADMIN", "admin@arctic-fox.com")
+    ADMIN = os.environ.get("ADMIN", "arctic.fox.flask@outlook.com")
     POSTS_PER_PAGE = 20
     COMMENTS_PER_PAGE = 30
     FOLLOWERS_PER_PAGE = 50
     # Flask-Mail
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.office365.com")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() in \
-        ["true", "on", "1"]
+    MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_SUBJECT_PREFIX = '[Arctic Fox]'
     MAIL_SENDER = f'Arctic Fox Admin <{ADMIN}>'
+    MAIL_FOR_TEST_OR_DEBUG = os.environ.get("MAIL_FOR_TEST_OR_DEBUG")
     SLOW_DB_QUERY_TIME = 0.5
     # APIFairy
     APIFAIRY_TITLE = os.environ.get("APIFAIRY_TITLE", "Arctic Fox")

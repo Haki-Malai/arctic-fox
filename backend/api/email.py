@@ -6,7 +6,12 @@ from flask_mail import Message
 
 def send_async_email(app, msg):
     with app.app_context():  # pragma: no cover
-        mail.send(msg)
+        print('Sending email to %s' % msg.recipients[0])
+        try:
+            mail.send(msg)
+            print('Email sent to %s' % msg.recipients[0])
+        except Exception as e:
+            print('Failed to send email to %s' % msg.recipients[0])
 
         
 def send_email(to, subject, template, **kwargs):  # pragma: no cover
@@ -15,6 +20,7 @@ def send_email(to, subject, template, **kwargs):  # pragma: no cover
                   sender=app.config['MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kwargs)
     msg.html = render_template(template + '.html', **kwargs)
+    msg.msgId = app.config['MAIL_SUBJECT_PREFIX']
     thr = Thread(target=send_async_email, args=[app, msg])
     thr.start()
     return thr

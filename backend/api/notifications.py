@@ -14,7 +14,7 @@ update_notification_schema = NotificationSchema(partial=True)
     
 @notifications.route('/<int:id>')
 @authenticate(token_auth)
-@paginated_response(notification_schema,
+@paginated_response(notifications_schema,
                     order_by=Notification.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)

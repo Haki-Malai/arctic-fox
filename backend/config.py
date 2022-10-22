@@ -57,7 +57,6 @@ class ProductionConfig(Config):
         "sqlite:///" + os.path.join(basedir, "data.sqlite"))
     SQLALCHEMY_RECORD_QUERIES = True
     SLOW_DB_QUERY_TIME = 0.5
-    SESSION_PERMAMENT = False
     
 
 config = {

@@ -19,7 +19,10 @@ update_comment_schema = CommentSchema(partial=True)
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def all():
-    """Retrieve all comments."""
+    """Retrieve all comments.
+
+    This endpoint requires authentication and uses pagination.
+    """
     return Comment.query
 
 
@@ -28,7 +31,10 @@ def all():
 @response(comment_schema)
 @other_responses({404: 'Comment not found'})
 def get(id):
-    """Retrieve a comment by id"""
+    """Retrieve a comment by id
+
+    This endpoint requires authentication.
+    """
     return db.session.get(Comment, id) or abort(404)
 
 
@@ -37,7 +43,10 @@ def get(id):
 @response(comment_schema, 201)
 @other_responses({403: 'Permission denied'})
 def new(args):
-    """Create a new comment"""
+    """Create a new comment
+
+    This endpoint requires authentication.
+    """
     user_id = token_auth.current_user()
     comment = Comment(user_id=user.id, **args)
     db.session.add(comment)
@@ -51,7 +60,10 @@ def new(args):
 @other_responses({403: 'Not allowed to edit this comment',
                   404: 'Comment not found'})
 def put(data, id):
-    """Edit a comment"""
+    """Edit a comment
+
+    This endpoint requires authentication.
+    """
     comment = db.session.get(Comment, id) or abort(404)
     if comment.user_id != token_auth.current_user().id and \
         token_auth.current_user().can(Permission.MODERATE_COMMENTS):
@@ -65,7 +77,10 @@ def put(data, id):
 @authenticate(token_auth)
 @other_responses({403: 'Not allowed to delete the comment'})
 def delete(id):
-    """Delete a comment"""
+    """Delete a comment
+
+    This endpoint requires authentication.
+    """
     comment = db.session.get(Comment, id) or abort(404)
     if comment.user_id != token_auth.current_user().id and \
         token_auth.current_user().can(Permission.MODERATE_COMMENTS):

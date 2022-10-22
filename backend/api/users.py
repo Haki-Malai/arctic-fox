@@ -22,7 +22,16 @@ update_user_schema = UpdateUserSchema()
 @authenticate(token_auth)
 @paginated_response(users_schema)
 def all():
-    """Retrieve all users"""
+    """Retrieve all users
+
+    This is a paginated endpoint. You can pass the following query
+    parameters to paginate the results:
+
+    - `page`: the page number to retrieve (default: 1)
+    - `max_limit`: the number of items per page (default: 25)
+    - `order_by`: the field to order the results by (default: None)
+    - `order_direction`: the direction to order the results by (default: asc)
+    """
     return User.query
 
 
@@ -30,7 +39,13 @@ def all():
 @body(user_schema)
 @response(user_schema, 201)
 def new(args):
-    """Register a new user"""
+    """Register a new user
+
+    The following fields are required:
+    - `username`: the username for the user
+    - `email`: the email address for the user
+    - `password`: the password for the user
+    """
     user = User(**args)
     db.session.add(user)
     db.session.commit()
@@ -42,7 +57,10 @@ def new(args):
 @response(user_schema)
 @other_responses({404: 'User not found'})
 def get(id):
-    """Retrieve a user by id"""
+    """Retrieve a user by id
+
+    This endpoint requires authentication.
+    """
     return db.session.get(User, id) or abort(404)
 
 
@@ -51,7 +69,10 @@ def get(id):
 @response(user_schema)
 @other_responses({404: 'User not found'})
 def get_by_username(username):
-    """Retrieve a user by username"""
+    """Retrieve a user by username
+
+    This endpoint requires authentication.
+    """
     return User.query.filter_by(username=username).first() or abort(404)
 
 
@@ -59,7 +80,10 @@ def get_by_username(username):
 @authenticate(token_auth)
 @response(user_schema)
 def me():
-    """Retrieve the authenticated user"""
+    """Retrieve the authenticated user
+
+    This endpoint requires authentication.
+    """
     return token_auth.current_user()
 
 
@@ -68,7 +92,10 @@ def me():
 @body(update_user_schema)
 @response(user_schema)
 def put(data):
-    """Edit user information"""
+    """Edit user information
+    
+    This endpoint requires authentication.
+    """
     user = token_auth.current_user()
     if 'password' in data and ('old_password' not in data or
                                not user.verify_password(data['old_password'])):
@@ -82,7 +109,10 @@ def put(data):
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 def my_following():
-    """Retrieve the users the logged in user is following"""
+    """Retrieve the users the logged in user is following
+
+    This endpoint requires authentication and is paginated.
+    """
     user = token_auth.current_user()
     return user.following
 
@@ -91,7 +121,10 @@ def my_following():
 @authenticate(token_auth)
 @paginated_response(users_schema, order_by=User.username)
 def my_followers():
-    """Retrieve the followers of the logged in user"""
+    """Retrieve the followers of the logged in user
+
+    This endpoint requires authentication and is paginated.
+    """
     user = token_auth.current_user()
     return user.followers
 
@@ -102,7 +135,10 @@ def my_followers():
           description='User is followed.')
 @other_responses({404: 'User is not followed'})
 def is_followed(id):
-    """Check if a user is followed"""
+    """Check if a user is followed
+
+    This endpoint requires authentication.
+    """
     user = token_auth.current_user()
     followed_user = db.session.get(User, id) or abort(404)
     if not user.is_following(followed_user):
@@ -116,7 +152,10 @@ def is_followed(id):
           description='User followed successfully.')
 @other_responses({404: 'User not found', 409: 'User already followed.'})
 def follow(id):
-    """Follow a user"""
+    """Follow a user
+
+    This endpoint requires authentication.
+    """
     user = token_auth.current_user()
     followed_user = db.session.get(User, id) or abort(404)
     if user.is_following(followed_user):
@@ -132,7 +171,10 @@ def follow(id):
           description='User unfollowed successfully.')
 @other_responses({404: 'User not found', 409: 'User is not followed.'})
 def unfollow(id):
-    """Unfollow a user"""
+    """Unfollow a user
+
+    This endpoint requires authentication.
+    """
     user = token_auth.current_user()
     unfollowed_user = db.session.get(User, id) or abort(404)
     if not user.is_following(unfollowed_user):
@@ -147,7 +189,10 @@ def unfollow(id):
 @paginated_response(users_schema, order_by=User.username)
 @other_responses({404: 'User not found'})
 def following(id):
-    """Retrieve the users this user is following"""
+    """Retrieve the users this user is following
+
+    This endpoint requires authentication.
+    """
     user = db.session.get(User, id) or abort(404)
     return user.following
 
@@ -157,7 +202,10 @@ def following(id):
 @paginated_response(users_schema, order_by=User.username)
 @other_responses({404: 'User not found'})
 def followers(id):
-    """Retrieve the followers of the user"""
+    """Retrieve the followers of the user
+
+    This endpoint requires authentication and uses pagination.
+    """
     user = db.session.get(User, id) or abort(404)
     return user.followers
 
@@ -170,7 +218,9 @@ def followers(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_posts(id):
-    """Retrieve the posts of an user"""
+    """Retrieve the posts of an user
+
+    This endpoint requires authentication and uses pagination"""
     return token_auth.current_user().posts
 
 
@@ -182,7 +232,9 @@ def get_user_posts(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_comments():
-    """Retrieve the comments of an user"""
+    """Retrieve the comments of an user
+
+    This endpoint requires authentication and uses pagination"""
     return token_auth.current_user().comments
 
 
@@ -194,5 +246,7 @@ def get_user_comments():
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_user_notifications():
-    """Retrieve the notifications of an user"""
+    """Retrieve the notifications of an user
+
+    This endpoint requires authentication and uses pagination"""
     return token_auth.current_user().notifications

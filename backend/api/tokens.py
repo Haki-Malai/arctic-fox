@@ -35,7 +35,13 @@ def token_response(token):
 @response(token_schema)
 @other_responses({401: 'Invalid username or password'})
 def new():
-    """Create new access token"""
+    """Create new access and refresh tokens
+
+      Creates a new access token for the authenticated user. The access token
+      will be valid for X minutes. A refresh token will be returned that can be
+      used to get a new access token without re-authenticating the user. The
+      refresh token is valid for X days.
+    """
     user = basic_auth.current_user()
     token = user.generate_auth_token()
     db.session.add(token)
@@ -50,6 +56,9 @@ def new():
 @other_responses({401: 'Invalid access token'})
 def refresh(args):
     """Refresh an access token
+
+    Refreshes an access token. The refresh token must be passed in a cookie
+    or the body. The access token must be passed in the body of the request.
     """
     access_token = args['access_token']
     refresh_token = args.get('refresh_token', request.cookies.get(
@@ -70,7 +79,11 @@ def refresh(args):
 @response(EmptySchema, status_code=204, description='Token revoked')
 @other_responses({401: 'Invalid access token'})
 def revoke():
-    """Revoke an access token"""
+    """Revoke an access token
+
+    Revokes an access token. The access token must be passed in the body of the
+    request.
+    """
     access_token = request.headers['Authorization'].split()[1]
     token = Token.query.filter_by(access_token=access_token).first()
     if not token:  # pragma: no cover
@@ -85,7 +98,11 @@ def revoke():
 @response(EmptySchema, status_code=204,
     description='Password reset email sent')
 def reset(args):
-    """Request a password reset token"""
+    """Request a password reset token
+
+    Requests a password reset token. The email address of the user must be
+    passed in the body of the request.
+    """
     user = User.query.filter_by(email=args['email']).first()
     if user is not None:
         reset_token = user.generate_reset_token()
@@ -101,7 +118,11 @@ def reset(args):
           description='Password reset successful')
 @other_responses({400: 'Invalid reset token'})
 def password_reset(args):
-    """Reset a user password"""
+    """Reset a user password
+
+    Resets a user password. The reset token and new password must be passed
+    in the body of the request.
+    """
     user = User.verify_reset_token(args['token'])
     if user is None:
         abort(400)
@@ -117,7 +138,10 @@ def password_reset(args):
           description='Account confirmation successful')
 @other_responses({400: 'Invalid confirm token'})
 def user_confirm(token):
-    """Reset a user password"""
+    """Confirm a user account
+
+    Confirms a user account. The confirm token must be passed in the URL.
+    """
     user = User.verify_confirm_token(token)
     if user is None:
         abort(400)

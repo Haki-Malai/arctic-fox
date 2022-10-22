@@ -20,7 +20,10 @@ update_post_schema = PostSchema(partial=True)
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def all():
-    """Retrieve all posts."""
+    """Retrieve all posts.
+    
+    This endpoint requires authentication and uses pagination.
+    """
     return Post.query
 
 
@@ -29,7 +32,10 @@ def all():
 @response(post_schema, 201)
 @other_responses({403: 'Permission denied'})
 def new(args):
-    """Create a new post"""
+    """Create a new post
+    
+    This endpoint requires authentication.
+    """
     user = token_auth.current_user()
     post = Post(user_id=user.id, **args)
     db.session.add(post)
@@ -42,7 +48,10 @@ def new(args):
 @response(post_schema)
 @other_responses({404: 'Post not found'})
 def get(id):
-    """Retrieve a post by id"""
+    """Retrieve a post by id
+    
+    This endpoint requires authentication.
+    """
     return db.session.get(Post, id) or abort(404)
 
 @posts.route('/<int:id>', methods=['PUT'])
@@ -52,7 +61,10 @@ def get(id):
 @other_responses({403: 'Not allowed to edit this post',
                   404: 'Post not found'})
 def put(data, id):
-    """Edit a post"""
+    """Edit a post
+    
+    This endpoint requires authentication.
+    """
     post = db.session.get(Post, id) or abort(404)
     if post.user_id != token_auth.current_user().id and \
         token_auth.current_user().can(Permission.MODERATE_COMMENTS):
@@ -66,7 +78,10 @@ def put(data, id):
 @authenticate(token_auth)
 @other_responses({403: 'Not allowed to delete the post'})
 def delete(id):
-    """Delete a post"""
+    """Delete a post
+    
+    This endpoint requires authentication.
+    """
     post = db.session.get(Post, id) or abort(404)
     if post.user_id != token_auth.current_user().id and \
         token_auth.current_user().can(Permission.MODERATE_COMMENTS):
@@ -84,6 +99,9 @@ def delete(id):
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get_post(id):
-    """Retrieve the comments of a post"""
+    """Retrieve the comments of a post
+    
+    This endpoint requires authentication and uses pagination.
+    """
     return Comment.query.filter_by(post_id=id) if db.session.get(Posts, id) \
         else abort(404)

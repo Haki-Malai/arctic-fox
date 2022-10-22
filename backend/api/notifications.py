@@ -19,7 +19,10 @@ update_notification_schema = NotificationSchema(partial=True)
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def get(id):
-    """Retrieve a notification by id."""
+    """Retrieve a notification by id.
+    
+    This endpoint requires authentication and uses pagination.
+    """
     notification = db.session.get(Notification, id) or abort(404)
     if token_auth.current_user().id == notification.user_id:
         notification.read = True
@@ -33,7 +36,10 @@ def get(id):
           description='Notification successfully deleted.')
 @other_responses({404: 'Comment not found', 403: 'Not allowed to delete the post'})
 def delete(id):
-    """Delete a notification."""
+    """Delete a notification.
+    
+    This endpoint requires authentication.
+    """
     notification = db.session.get(Notification, id) or abort(404)
     if token_auth.current_user().id != notification.user_id:
         abort(403)

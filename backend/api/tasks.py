@@ -21,7 +21,10 @@ empty_schema = EmptySchema()
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
 def all():
-    """Get available task list"""
+    """Get available task list
+    
+    This endpoint requires authentication and uses pagination.
+    """
     return Task.query.filter_by(start_date=None)
 
 
@@ -30,7 +33,10 @@ def all():
 @body(task_schema)
 @response(task_schema, 201)
 def new(args):
-    """Create a new task"""
+    """Create a new task
+    
+    This endpoint requires authentication.
+    """
     task = Task(**args)
     task.assignee_id = token_auth.current_user().id
     db.session.add(task)
@@ -43,7 +49,10 @@ def new(args):
 @response(task_schema)
 @other_responses({403: 'Not allowed to view', 404: 'Task not found'})
 def get(id):
-    """Retrieve a task by id"""
+    """Retrieve a task by id
+    
+    This endpoint requires authentication.
+    """
     task = db.session.get(Task, id) or abort(404)
     if task not in token_auth.current_user().assigned_tasks or\
         task not in token_auth.current_user().assigneed_tasks and \
@@ -58,7 +67,10 @@ def get(id):
 @response(task_schema)
 @other_responses({403: 'Not allowed to edit', 404: 'Task not found'})
 def put(data, id):
-    """Edit task information"""
+    """Edit task information
+    
+    This endpoint requires authentication.
+    """
     task = db.session.get(Task, id) or abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
         abort(403)
@@ -72,7 +84,10 @@ def put(data, id):
 @response(empty_schema, 204)
 @other_responses({403: 'Not allowed to delete', 404: 'Task not found'})
 def delete(id):
-    """Edit task information"""
+    """Edit task information
+    
+    This endpoint requires authentication.
+    """
     task = db.session.get(Task, id) or abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
         abort(403)
@@ -87,7 +102,10 @@ def delete(id):
                     order_by=Task.timestamp,
                     pagination_schema=DateTimePaginationSchema)
 def get_all_assigned():
-    """Retrieve tasks assigned to authenticated user."""
+    """Retrieve tasks assigned to authenticated user.
+    
+    This endpoint requires authentication and uses pagination.
+    """
     return token_auth.current_user().assigned_tasks
 
 
@@ -97,7 +115,10 @@ def get_all_assigned():
 @other_responses({404: 'Task or user not found',
     403: 'Not allowed to read'})
 def get_assigned(id):
-    """Read a assigned task"""
+    """Read a assigned task
+    
+    This endpoint requires authentication.
+    """
     task = db.session.get(Task, id)
     if task is None:
         abort(404)

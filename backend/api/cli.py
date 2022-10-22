@@ -10,7 +10,7 @@ script = Blueprint('script', __name__)
 @click.option('--verbosity', default=2, type=int)
 def test(patern, verbosity):
     import unittest
-    patern = f'test_{patern}*.py'
+    patern = f'test_*{patern}*.py'
     tests = unittest.TestLoader().discover('tests', patern)
     unittest.TextTestRunner(verbosity=verbosity).run(tests)
 

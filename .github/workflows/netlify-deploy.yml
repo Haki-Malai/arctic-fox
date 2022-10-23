@@ -5,10 +5,15 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+
 jobs:
-  deploy:
-    name: 'Deploy to Netlify'
+  build:
+    runs-on: ubuntu-latest
     steps:
+      - name: Clone Repo
+      - uses: actions/checkout@v3
+
+      - name: Build and push
       - uses: jsmrcaga/action-netlify-deploy@v1.1.0
         with:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

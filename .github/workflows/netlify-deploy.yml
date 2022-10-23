@@ -5,14 +5,25 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+
 jobs:
   deploy:
-    name: 'Deploy to Netlify'
+    name: 'Deploy'
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: jsmrcaga/action-netlify-deploy@v1.1.0
-        with:
+      - uses: actions/checkout@v3
+      - name: Install
+        working-directory: ./frontend
+        run: yarn install
+
+      - name: Build
+        working-directory: ./frontend
+        run: npx expo export:web
+
+      - name: Deploy
+        working-directory: ./frontend
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_DEPLOY_TO_PROD: true
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          build_directory: 'frontend/web-build'
-          build_command: 'npx expo export:web'
+        run: netlify deploy --dir web-build --prod

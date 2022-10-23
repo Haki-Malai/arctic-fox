@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 161f9ccfe2c6733367963ecb547b435baac3ea2b
 
 jobs:
   build:

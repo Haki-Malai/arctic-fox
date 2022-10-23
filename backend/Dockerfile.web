@@ -3,7 +3,9 @@ FROM python:3.8.10
 
 LABEL maintainer="Haki-Malai" email="hakimalaj@outlook.com"
 
-COPY backend .
+WORKDIR /arcticfox
+
+COPY . .
 
 RUN pip install -r requirements.txt
 

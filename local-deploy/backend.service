@@ -1,0 +1,12 @@
+[Unit]
+Description=Python API
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/arcticfox
+ExecStart=/usr/bin/gunicorn -b :5000 api:index
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

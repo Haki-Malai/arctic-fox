@@ -250,9 +250,9 @@ class User(Updateable, db.Model):
         return self.followers.filter_by(
             follower=user.id).first() is not None
 
-    def add_notification(self, name, data):
-        self.notifications.filter_by(name=name).delete()
-        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+    def add_notification(self, **kwargs):
+        db.session.delete(db.session.get(Notification, kwargs['id']))
+        n = Notification(body=body, payload_json=json.dumps(data), user=self)
         db.session.add(n)
         return n
 

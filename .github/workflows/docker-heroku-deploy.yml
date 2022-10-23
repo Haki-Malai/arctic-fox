@@ -3,6 +3,7 @@ name: "Heroku Deploy"
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,12 +19,14 @@ jobs:
         run: heroku container:login
 
       - name: Build and push
+        working-directory: ./backend
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
         run: heroku container:push --recursive -a ${{ secrets.HEROKU_APP_NAME }} web
         
       - name: Realease
+        working-directory: ./backend
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}

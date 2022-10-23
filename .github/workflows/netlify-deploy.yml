@@ -10,14 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone Repo
-      - uses: actions/checkout@v3
-
       - name: Build and push
       - uses: jsmrcaga/action-netlify-deploy@v1.1.0
+        working-directory: ./frontend
         with:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_DEPLOY_TO_PROD: true
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          build_directory: 'frontend/web-build'
+          build_directory: 'web-build'
           build_command: 'npx expo export:web'

@@ -1,4 +1,4 @@
-name: 'My Workflow'
+name: 'Netlify Deploy'
 
 on:
   push:

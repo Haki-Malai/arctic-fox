@@ -3,18 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-<<<<<<< HEAD
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-=======
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-<<<<<<< HEAD
->>>>>>> 161f9ccfe2c6733367963ecb547b435baac3ea2b
-=======
->>>>>>> 161f9ccfe2c6733367963ecb547b435baac3ea2b
     "web": "expo start --web",
     "build:web": "expo export:web"
   },

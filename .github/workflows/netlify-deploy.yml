@@ -13,10 +13,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: jsmrcaga/action-netlify-deploy@v1.1.0
-        with:
+      - name: Build and push
+        working-directory: ./backend
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_DEPLOY_TO_PROD: true
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          build_directory: './frondent/web-build'
-          build_command: 'npx expo export:web'
+        run: netlify deploy --dir web-build

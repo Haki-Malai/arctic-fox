@@ -9,4 +9,6 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
+RUN flask --app index script fake
+
 CMD ["gunicorn", "index:app"]

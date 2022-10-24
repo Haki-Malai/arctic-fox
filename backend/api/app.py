@@ -1,3 +1,4 @@
+from api.errors import register_error_handlers
 from config import config
 from flask import Flask, redirect, url_for
 from flask_mail import Mail
@@ -5,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 from apifairy import APIFairy
+from werkzeug.exceptions import HTTPException
 
 db = SQLAlchemy()
 apifairy = APIFairy()
@@ -15,6 +17,7 @@ cors = CORS()
 def create_app(config_name):
     app = Flask(__name__)
     app.url_map.strict_slashes = False
+    register_error_handlers(app)
     # Register cli commands
     from api.cli import script
     app.register_blueprint(script)
@@ -31,8 +34,6 @@ def create_app(config_name):
     app.extensions['mail'].suppress = True
 
     # Import blueprints
-    from api.errors import errors
-    app.register_blueprint(errors)
     from api.tokens import tokens
     app.register_blueprint(tokens, url_prefix='/api/tokens')
     from api.users import users

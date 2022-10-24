@@ -1,51 +1,30 @@
-from api.app import apifairy
-from flask import Blueprint, current_app
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.exceptions import HTTPException, InternalServerError
+from flask import jsonify
 
-errors = Blueprint('errors', __name__)
+def register_error_handlers(app):
+    """Register error handlers with the Flask application."""
+    def http_error(error):
+        return jsonify({
+            'code': error.code,
+            'message': error.name,
+            'description': error.description,
+        }), error.code
 
-
-@errors.app_errorhandler(HTTPException)
-def http_error(error):
-    return jsonify({
-        'code': error.code,
-        'message': error.name,
-        'description': error.description,
-    }), error.code
-
-
-@errors.app_errorhandler(IntegrityError)
-def sqlalchemy_integrity_error(error):  # pragma: no cover
-    return {
-        'code': 400,
-        'message': 'Database integrity error',
-        'description': str(error.orig),
-    }, 400
-
-
-@errors.app_errorhandler(SQLAlchemyError)
-def sqlalchemy_error(error):  # pragma: no cover
-    if current_app.config['DEBUG'] is True:
+    def db_integrity_error(error):  # pragma: no cover
         return {
-            'code': InternalServerError.code,
-            'message': 'Database error',
-            'description': str(error),
-        }, 500
-    else:
-        return {
-            'code': InternalServerError.code,
-            'message': InternalServerError().name,
-            'description': InternalServerError.description,
-        }, 500
+            'code': 400,
+            'message': 'Database integrity error',
+            'description': str(error.orig),
+        }, 400
 
+    def db_error(error):  # pragma: no cover
+            return {
+                'code': InternalServerError.code,
+                'message': InternalServerError().name,
+                'description': InternalServerError.description,
+            }, 500
 
-@apifairy.error_handler
-def validation_error(code, messages):  # pragma: no cover
-    return {
-        'code': code,
-        'message': 'Validation Error',
-        'description': ('The server found one or more errors in the '
-                        'information that you sent.'),
-        'errors': messages,
-    }, code
+    app.register_error_handler(HTTPException, http_error)
+    app.register_error_handler(IntegrityError, db_integrity_error)
+    app.register_error_handler(SQLAlchemyError, db_error)

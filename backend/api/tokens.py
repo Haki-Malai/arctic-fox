@@ -133,7 +133,6 @@ def password_reset(args):
 
 
 @tokens.route('/confirm/<token>')
-@body(ConfirmationSchema)
 @response(EmptySchema, status_code=204,
           description='Account confirmation successful')
 @other_responses({400: 'Invalid confirm token'})

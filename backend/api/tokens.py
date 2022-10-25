@@ -29,10 +29,19 @@ def token_response(token):
         if current_app.config['REFRESH_TOKEN_IN_BODY'] else None,
     }, 200, headers
 
+@tokens.route('/')
+@authenticate(token_auth)
+@response(EmptySchema, status_code=200)
+def check():
+    """Check if the current user is authenticated
+    
+    """
+    return {}
+
 
 @tokens.route('/', methods=['POST'])
 @authenticate(basic_auth)
-@response(token_schema)
+@response(token_schema, status_code=200, description='Token Accepted')
 @other_responses({401: 'Invalid username or password'})
 def new():
     """Create new access and refresh tokens

@@ -88,7 +88,7 @@ class User(Updateable, db.Model):
     location = db.Column(db.String(64))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
-    avatar_hash = db.Column(db.String(32))
+    avatar = db.Column(db.String(128))
     tokens = db.relationship('Token',
         backref='user',
         lazy='dynamic')
@@ -128,13 +128,16 @@ class User(Updateable, db.Model):
         super(User, self).__init__(**kwargs)
         if self.email == current_app.config['ADMIN']:
             self.role = 'admin'
-        if self.email is not None and self.avatar_hash is None:
-            self.avatar_hash = self.gravatar_hash()
+        if self.email is not None and self.avatar is None:
+            url = 'https://www.gravatar.com/avatar'
+            hash = md5(self.email.encode('utf-8')).hexdigest()
+            self.avatar = f'{url}/{hash}'
         send_email(to=kwargs['email'],
                    subject='Confirm Account',
                    template='confirm', user=self,
                    token=self.generate_confirm_token(),
                    url=f'/tokens/confirm?={self.generate_confirm_token()}')
+
 
     def get_roles(self):
         return db.session.get(Role, self.role_id).name
@@ -216,15 +219,6 @@ class User(Updateable, db.Model):
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.commit()
-
-    def gravatar_hash(self):
-        return md5(self.email.lower().encode('utf-8')).hexdigest()
-
-    def gravatar(self, size=100, default='identicon', rating='g'):
-        url = 'https://www.gravatar.com/avatar'
-        hash = md5(self.email.encode('utf-8')).hexdigest()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, size=size, default=default, rating=rating)
 
     def follow(self, user):
         if not self.is_following(user):

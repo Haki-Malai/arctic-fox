@@ -51,32 +51,48 @@ class UserSchema(ma.SQLAlchemySchema):
         model = User
         ordered = True
 
-    username = ma.auto_field(required=True, validate=validate.Length(min=8, max=64))
-    email = ma.auto_field(required=True,
-                          validate=[validate.Email(), validate.Length(max=128)])
+    id = ma.auto_field(dump_only=True)
+    username = ma.auto_field(required=True)
+    email = ma.auto_field(required=True)
     password = ma.String(required=True, load_only=True,
                              validate=validate.Length(min=8, max=128))
     confirmed = ma.auto_field(dump_only=True)
     location = ma.auto_field(dump_only=True)
-    avatar_hash = ma.auto_field(dump_only=True)
+    avatar = ma.auto_field(dump_only=True)
     member_since = ma.auto_field(dump_only=True)
     bitcoin_address = ma.auto_field()
 
     @validates('username')
     def validate_username(self, value):
-        user = token_auth.current_user()
-        old_username = user.username if user else None
-        if value != old_username and \
-                User.query.filter_by(username=value).first():
+        if User.query.filter_by(username=value).first():
             raise ValidationError('Use a different username.')
+        if not value.isalnum():
+            raise ValidationError('Username must be alphanumeric.')
+        if len(value) < 8:
+            raise ValidationError('Username must be at least 8 characters long.')
+        if len(value) > 64:
+            raise ValidationError('Username must be at most 64 characters long.')
 
     @validates('email')
     def validate_email(self, value):
-        user = token_auth.current_user()
-        old_email = user.email if user else None
-        if value != old_email and \
-                User.query.filter_by(email=value).first():
+        if User.query.filter_by(email=value).first():
             raise ValidationError('Use a different email.')
+        if not validate.Email()(value):
+            raise ValidationError('Email is not valid.')
+        if len(value) > 64:
+            raise ValidationError('Email must be at most 64 characters long.')
+
+    @validates('password')
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise ValidationError('Password must be at least 8 characters long.')
+        if len(value) > 128:
+            raise ValidationError('Password must be at most 128 characters long.')
+        if not any(char.isdigit() for char in value) or \
+            not any(char.isupper() for char in value) or \
+            not any(char.islower() for char in value):
+            raise ValidationError('Password must contain at least one uppercase, '
+                                  'one lowercase and one digit.')
 
 
 class UpdateUserSchema(UserSchema):

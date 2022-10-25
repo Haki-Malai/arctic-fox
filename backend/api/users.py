@@ -37,7 +37,8 @@ def all():
 
 @users.route('/', methods=['POST'])
 @body(user_schema)
-@response(user_schema, 201)
+@response(user_schema)
+@other_responses({400: 'Bad Request', 422: 'Unprocessable Entity'})
 def new(args):
     """Register a new user
 

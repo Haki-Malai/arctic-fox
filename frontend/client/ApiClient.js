@@ -4,7 +4,7 @@ import {encode as btoa} from 'base-64';
 
 class ApiClient {
     constructor() {
-        this.baseUrl = 'http://arcticfox.herokuapp.com/api';
+        this.baseUrl = 'https://arcticfox.herokuapp.com/api';
     }
     
     async isAuthenticated() {

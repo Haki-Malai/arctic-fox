@@ -90,10 +90,11 @@ def refresh(args):
 def revoke():
     """Revoke an access token
 
-    Revokes an access token. The access token must be passed in the body of the
-    request.
+    Revokes an access token. The access token must be passed in the headers
+    as a Bearer Token.
     """
     access_token = request.headers['Authorization'].split()[1]
+    print(access_token)
     token = Token.query.filter_by(access_token=access_token).first()
     if not token:  # pragma: no cover
         abort(401)

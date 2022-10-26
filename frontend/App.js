@@ -3,7 +3,6 @@ import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createStackNavigator } from '@react-navigation/stack';
-import { getHeaderTitle } from '@react-navigation/elements';
 import { useLoadedAssets } from './hooks/useLoadedAssets';
 import {WelcomeScreen,
     LoginScreen,
@@ -19,7 +18,7 @@ export default function App() {
     const [navigationStart, setNavigationStart] = useState('WelcomeScreen');
 
     useEffect(() => {
-        apiClient.isAuthenticated() === true? setNavigationStart('DashboardScreen') : null;
+        apiClient.isAuthenticated()? setNavigationStart('DashboardScreen') : null;
     });
 
     if (!isLoadingComplete) {

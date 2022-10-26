@@ -32,7 +32,7 @@ def db_error(error):  # pragma: no cover
             'code': InternalServerError.code,
             'message': InternalServerError().name,
             'description': InternalServerError.description,
-            'errors': jsonify({'username': 'Username already exists'}),
+            'errors': {'username': 'Username already exists'},
             'fields': ['username']
         }), 500
 

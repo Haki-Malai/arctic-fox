@@ -19,7 +19,8 @@ export default class RegisterScreen extends React.Component {
 			email: '',
 			emailError: '',
 			password: '',
-			passwordError: ''
+			passwordError: '',
+			loading: false
 		}
 		this.setUsername = this.setUsername.bind(this);
 		this.setEmail = this.setEmail.bind(this);
@@ -39,12 +40,18 @@ export default class RegisterScreen extends React.Component {
 	}
 
 	onSignUpPressed = () => {
+		this.setState({
+			loading: true ,
+			usernameError: '',
+			emailError: '',
+			passwordError: ''});
 		apiClient.post('/users', {
 			username: this.state.username,
 			email: this.state.email,
 			password: this.state.password
 		})
 		.then(response => {
+			this.setState({ loading: false });
 			if (response.ok) {
 				apiClient.login(this.state.username, this.state.password)
 				.then(() => this.props.navigation.navigate('DashboardScreen'))
@@ -108,9 +115,10 @@ export default class RegisterScreen extends React.Component {
 				errorText={this.state.passwordError}
 				secureTextEntry
 			/>
-			<Button
-				onPress={this.onSignUpPressed}
+			<Button 
 				mode="contained"
+				onPress={this.onSignUpPressed}
+				loading={this.state.loading}
 				style={{ marginTop: 24 }}
 			>
 			Sign Up

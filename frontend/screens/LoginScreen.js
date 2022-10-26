@@ -32,7 +32,7 @@ constructor(props) {
 	}
 
 	onLoginPressed = () => {
-		this.setState({ loading: true });
+		this.setState({ error: '', loading: true });
 		apiClient.login(this.state.username, this.state.password)
 		.then(response => {
 			if (response.ok) {
@@ -74,7 +74,11 @@ constructor(props) {
 				<Text style={styles.forgot}>Forgot your password?</Text>
 			</TouchableOpacity>
 			</View>
-			<Button mode="contained" onPress={this.onLoginPressed}>
+			<Button 
+				mode="contained"
+				onPress={this.onLoginPressed}
+				loading={this.state.loading}
+			>
 				Login
 			</Button>
 			<View style={styles.row}>

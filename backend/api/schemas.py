@@ -107,8 +107,8 @@ class TokenSchema(ma.Schema):
     class Meta:
         ordered = True
 
-    access_token = ma.auto_field(required=True)
-    refresh_token = ma.auto_field()
+    access_token = ma.String(required=True)
+    refresh_token = ma.String()
 
 
 class PostSchema(ma.SQLAlchemySchema):

@@ -11,7 +11,7 @@ def register_error_handlers(app):
 @errors.app_errorhandler(HTTPException)
 def http_error(error):
     return jsonify({
-        'status': error.code,
+        'code': error.code,
         'message': error.name,
         'description': error.description,
     }), error.code

@@ -118,7 +118,8 @@ class User(Updateable, db.Model):
             self.role = 'admin'
         if self.email is not None and self.avatar is None:
             url = 'https://www.gravatar.com/avatar'
-            avatar_hash = md5(self.email.lower().encode('utf-8')).hexdigest()
+            avatar_hash = md5(self.email.lower().encode('utf-8'),
+                              usedforsecurity=False).hexdigest()
             self.avatar = f'{url}/{avatar_hash}?d=identicon'
         send_email(to=kwargs['email'],
                    subject='Confirm Account',

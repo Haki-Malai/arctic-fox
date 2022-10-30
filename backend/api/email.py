@@ -9,9 +9,9 @@ def send_async_email(app, msg):
         try:
             mail.send(msg)
         except Exception as e:
-            print('Failed to send email to %s' % msg.recipients[0])
+            print('Failed to send email to %s: %s' % msg.recipients[0] % str(e))
 
-        
+
 def send_email(to, subject, template, **kwargs):  # pragma: no cover
     app = current_app._get_current_object()
     msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + subject,

@@ -8,19 +8,20 @@ from flask import current_app
 from time import time
 import jwt
 import requests
-import pickle
 
 
 class Updateable:
     def update(self, data):
         for attr, value in data.items():
             setattr(self, attr, value)
-        
+
+
 assignment = db.Table(
     'assignment',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
     db.Column('assigned_id', db.Integer, db.ForeignKey('user.id'))
 )
+
 
 follower = db.Table(
     'follower',
@@ -64,24 +65,11 @@ class Token(db.Model):
 
 
 class User(Updateable, db.Model):
-    """
-    A class to represent a user.
-    
-    ...
-    
-    Attributes
-    ----------
-    id : int
-        the user's id
-    username : str
-        the user's username 
-    
-    """
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String(16), default='user')
     username = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(16), default='user')
     confirmed = db.Column(db.Boolean, default=False)
     bitcoin_address = db.Column(db.String(128), index=True)
     name = db.Column(db.String(64))
@@ -92,16 +80,16 @@ class User(Updateable, db.Model):
     tokens = db.relationship('Token',
         backref='user',
         lazy='dynamic')
-    posts = db.relationship('Post', 
+    posts = db.relationship('Post',
         backref='user',
         lazy='dynamic')
-    comments = db.relationship('Comment', 
+    comments = db.relationship('Comment',
         backref='user',
         lazy='dynamic')
     notifications = db.relationship('Notification',
         backref='user',
         lazy='dynamic')
-    assigneed_tasks = db.relationship('Task', 
+    assigneed_tasks = db.relationship('Task',
         backref='user',
         lazy='dynamic')
     assigned_tasks = db.relationship('Task',
@@ -130,17 +118,13 @@ class User(Updateable, db.Model):
             self.role = 'admin'
         if self.email is not None and self.avatar is None:
             url = 'https://www.gravatar.com/avatar'
-            hash = md5(self.email.lower().encode('utf-8')).hexdigest()
-            self.avatar = f'{url}/{hash}?d=identicon'
+            avatar_hash = md5(self.email.lower().encode('utf-8')).hexdigest()
+            self.avatar = f'{url}/{avatar_hash}?d=identicon'
         send_email(to=kwargs['email'],
                    subject='Confirm Account',
                    template='confirm', user=self,
                    token=self.generate_confirm_token(),
                    url=f'/tokens/confirm?={self.generate_confirm_token()}')
-
-
-    def get_roles(self):
-        return db.session.get(Role, self.role_id).name
 
     @property
     def password(self):
@@ -200,6 +184,8 @@ class User(Updateable, db.Model):
                               algorithms=['HS256'])['email']
         except jwt.PyJWTError:
             return None
+        except KeyError:
+            return None
         return db.session.scalar(User.query.filter_by(email=email))
 
     def generate_reset_token(self, expiration=3600):
@@ -210,11 +196,11 @@ class User(Updateable, db.Model):
     @staticmethod
     def verify_reset_token(reset_token):
         try:
-            id = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
+            user_id = jwt.decode(reset_token, current_app.config['SECRET_KEY'],
                               algorithms=['HS256'])['reset']
         except jwt.PyJWTError:
             return
-        return db.session.scalar(User.query.filter_by(id=id))
+        return db.session.scalar(User.query.filter_by(id=user_id))
 
     def ping(self):
         self.last_seen = datetime.utcnow()
@@ -245,10 +231,10 @@ class User(Updateable, db.Model):
             follower=user.id).first() is not None
 
     def add_notification(self, **kwargs):
-        db.session.delete(db.session.get(Notification, kwargs['id']))
-        n = Notification(body=body, payload_json=json.dumps(data), user=self)
+        n = Notification(**kwargs)
         db.session.add(n)
         return n
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -259,7 +245,7 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
- 
+
     def update(self, data):
         self.body = data['body']       
 
@@ -286,6 +272,9 @@ class Notification(db.Model):
 
     def __repr__(self):
         return '<Notification {}>'.format(self.body)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class Task(Updateable, db.Model):
@@ -331,11 +320,11 @@ class Task(Updateable, db.Model):
         if self.txid is None:
             return None
         res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + self.txid).json()
-        return self.res['confirmations'] or None
+        return res['confirmations'] or None
 
     @property
     def transaction_amount(self):
         if self.txid is None:
             return None
         res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + self.txid).json()
-        return float(self.res['total']) * 0.00000001 or None
+        return float(res['total']) * 0.00000001 or None

@@ -19,7 +19,7 @@ class ErrorTestCase(BaseTestCase):
         self.assertTrue(response.status_code == 404)
         json_response = json.loads(response.get_data(as_text=True))
         self.assertTrue(json_response['error'] == HTTP_STATUS_CODES.get(404, 'Unknown error'))
-    
+
     def test_no_auth(self):
         response = self.client.get('/api/posts', \
             content_type='application/json')

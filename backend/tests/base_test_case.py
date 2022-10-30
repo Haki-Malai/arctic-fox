@@ -3,12 +3,10 @@ from api.app import create_app, db
 from api.models import User
 
 
-class BaseTestCase(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):  # nosec
 
     username = 'username'
     password = 'password'
-    email = ''
-    user = None
 
     def setUp(self):
         self.app = create_app('testing')

@@ -1,5 +1,5 @@
 import os
-from api import create_app, db, cli
+from api import create_app, db
 from api.models import User, follower, Post, Comment, \
     Notification, Task, assignment
 

@@ -21,7 +21,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_SUBJECT_PREFIX = '[Arctic Fox]'
     MAIL_SENDER = f'Arctic Fox Admin <{ADMIN}>'
-    MAIL_FOR_TEST_OR_DEBUG = os.environ.get("MAIL_FOR_TEST_OR_DEBUG")
+    MAIL_FOR_TEST_OR_DEBUG = os.environ.get("MAIL_FOR_TEST_OR_DEBUG", "test@testing.gr")
     SLOW_DB_QUERY_TIME = 0.5
     # APIFairy
     APIFAIRY_TITLE = os.environ.get("APIFAIRY_TITLE", "Arctic Fox")
@@ -57,7 +57,7 @@ class ProductionConfig(Config):
         "sqlite:///" + os.path.join(basedir, "data.sqlite"))
     SQLALCHEMY_RECORD_QUERIES = True
     SLOW_DB_QUERY_TIME = 0.5
-    
+
 
 config = {
     'default': DevelopmentConfig,

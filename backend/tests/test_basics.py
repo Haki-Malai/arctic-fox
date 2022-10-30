@@ -1,7 +1,7 @@
 from tests.base_test_case import BaseTestCase
 
 
-class BaseTestCase(BaseTestCase):
+class BasicsTestCase(BaseTestCase):
     def test_app_exists(self):
         self.assertFalse(self.app is None)
 

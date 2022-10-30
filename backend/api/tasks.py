@@ -1,8 +1,8 @@
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 from api import db
-from api.models import User, Task, assignment
-from api.schemas import TokenSchema, TaskSchema, \
+from api.models import Task, assignment
+from api.schemas import TaskSchema, \
     DateTimePaginationSchema, EmptySchema
 from api.auth import token_auth
 from api.decorators import paginated_response
@@ -11,7 +11,6 @@ tasks = Blueprint('tasks', __name__)
 task_schema = TaskSchema()
 tasks_schema = TaskSchema(many=True)
 update_task_schema = TaskSchema(partial=True)
-empty_schema = EmptySchema()
 
 
 @tasks.route('/',)
@@ -20,9 +19,8 @@ empty_schema = EmptySchema()
                     order_by=Task.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
-def all():
+def get_tasks():
     """Get available task list
-    
     This endpoint requires authentication and uses pagination.
     """
     return Task.query.filter_by(start_date=None)
@@ -32,9 +30,8 @@ def all():
 @authenticate(token_auth)
 @body(task_schema)
 @response(task_schema, 201)
-def new(args):
+def post_task(args):
     """Create a new task
-    
     This endpoint requires authentication.
     """
     task = Task(**args)
@@ -48,12 +45,11 @@ def new(args):
 @authenticate(token_auth)
 @response(task_schema)
 @other_responses({403: 'Not allowed to view', 404: 'Task not found'})
-def get(id):
+def get_task(task_id):
     """Retrieve a task by id
-    
     This endpoint requires authentication.
     """
-    task = db.session.get(Task, id) or abort(404)
+    task = db.session.get(Task, task_id) or abort(404)
     if task not in token_auth.current_user().assigned_tasks or\
         task not in token_auth.current_user().assigneed_tasks and \
             task.start_date is None:
@@ -66,12 +62,11 @@ def get(id):
 @body(update_task_schema)
 @response(task_schema)
 @other_responses({403: 'Not allowed to edit', 404: 'Task not found'})
-def put(data, id):
+def put_task(data, task_id):
     """Edit task information
-    
     This endpoint requires authentication.
     """
-    task = db.session.get(Task, id) or abort(404)
+    task = db.session.get(Task, task_id) or abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
         abort(403)
     task.update(data)
@@ -81,14 +76,13 @@ def put(data, id):
 
 @tasks.route('/<int:id>', methods=['DELETE'])
 @authenticate(token_auth)
-@response(empty_schema, 204)
+@response(EmptySchema, 204)
 @other_responses({403: 'Not allowed to delete', 404: 'Task not found'})
-def delete(id):
+def delete_task(task_id):
     """Edit task information
-    
     This endpoint requires authentication.
     """
-    task = db.session.get(Task, id) or abort(404)
+    task = db.session.get(Task, task_id) or abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
         abort(403)
     db.session.delete(task)
@@ -101,9 +95,8 @@ def delete(id):
 @paginated_response(tasks_schema,
                     order_by=Task.timestamp,
                     pagination_schema=DateTimePaginationSchema)
-def get_all_assigned():
+def get_tasks_assigned():
     """Retrieve tasks assigned to authenticated user.
-    
     This endpoint requires authentication and uses pagination.
     """
     return token_auth.current_user().assigned_tasks
@@ -112,14 +105,13 @@ def get_all_assigned():
 @tasks.route('/assigned/<int:id>')
 @authenticate(token_auth)
 @response(task_schema)
-@other_responses({404: 'Task or user not found',
+@other_responses({404: 'Task not found',
     403: 'Not allowed to read'})
-def get_assigned(id):
+def get_task_assigned(task_id):
     """Read a assigned task
-    
     This endpoint requires authentication.
     """
-    task = db.session.get(Task, id)
+    task = db.session.get(Task, task_id)
     if task is None:
         abort(404)
     if task not in token_auth.current_user().assigned_tasks:
@@ -129,12 +121,12 @@ def get_assigned(id):
 
 @tasks.route('/assigned/<int:id>', methods=['POST'])
 @authenticate(token_auth)
-@response(empty_schema, 201)
-@other_responses({404: 'Task or user not found',
+@response(EmptySchema, 201)
+@other_responses({404: 'Task not found',
     405: 'Assign to self not allowed', 409: 'Already assigned'})
-def set_assigned(id):
+def post_task_assigned(task_id):
     """Assign authenticated user to task"""
-    task = db.session.get(Task, id)
+    task = db.session.get(Task, task_id)
     if task is None:
         abort(404)
     if task.assignee == token_auth.current_user():
@@ -148,11 +140,11 @@ def set_assigned(id):
 @tasks.route('/assigned/<int:id>', methods=['PUT'])
 @authenticate(token_auth)
 @body(update_task_schema)
-@response(task_schema)
+@response(task_schema, 202)
 @other_responses({403: 'Not allowed to edit', 404: 'Task not found'})
-def put_assigned(data, id):
+def put_task_assigned(data, task_id):
     """Add input to task as assigned user"""
-    task = db.session.get(Task, id) or abort(404)
+    task = db.session.get(Task, task_id) or abort(404)
     if task not in token_auth.current_user().assigned_tasks:
         abort(403)
     if 'input_data' not in data or len(data) > 1:
@@ -167,7 +159,7 @@ def put_assigned(data, id):
 @paginated_response(tasks_schema,
                     order_by=Task.timestamp,
                     pagination_schema=DateTimePaginationSchema)
-def get_all_assigneed():
+def get_tasks_assigneed():
     """Retrieve tasks assigned from authenticated user."""
     return token_auth.current_user().assigneed_tasks
 
@@ -176,9 +168,9 @@ def get_all_assigneed():
 @authenticate(token_auth)
 @response(task_schema)
 @other_responses({404: 'Task not found', 403: 'Not allowed to read'})
-def get_assigneed(id):
+def get_task_assigneed(task_id):
     """Read a assigneed task"""
-    task = db.session.get(Task, id)
+    task = db.session.get(Task, task_id)
     if task is None:
         abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
@@ -191,9 +183,9 @@ def get_assigneed(id):
 @body(update_task_schema)
 @response(task_schema)
 @other_responses({403: 'Not allowed to edit', 404: 'Task not found'})
-def put_assigneed(data, id):
+def put_task_assigneed(data, task_id):
     """Edit task as task creator"""
-    task = db.session.get(Task, id) or abort(404)
+    task = db.session.get(Task, task_id) or abort(404)
     if task not in token_auth.current_user().assigneed_tasks:
         abort(403)
     task.update(data)

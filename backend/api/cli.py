@@ -1,4 +1,3 @@
-import os
 import click
 from flask import Blueprint
 
@@ -25,4 +24,5 @@ def fake():
     fake_follows()
     fake_posts()
     fake_comments()
+    fake_notifications()
     fake_tasks()

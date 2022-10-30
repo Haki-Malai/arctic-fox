@@ -1,5 +1,5 @@
 from flask import Blueprint, abort
-from api.models import User, Post, Comment
+from api.models import Post, Comment
 from api.schemas import CommentSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
@@ -18,9 +18,8 @@ update_comment_schema = CommentSchema(partial=True)
                     order_by=Comment.timestamp,
                     order_direction='desc',
                     pagination_schema=DateTimePaginationSchema)
-def all():
+def get_comments():
     """Retrieve all comments.
-
     This endpoint requires authentication and uses pagination.
     """
     return Comment.query
@@ -30,25 +29,23 @@ def all():
 @authenticate(token_auth)
 @response(comment_schema)
 @other_responses({404: 'Comment not found'})
-def get(id):
+def get_comment(comment_id):
     """Retrieve a comment by id
-
     This endpoint requires authentication.
     """
-    return db.session.get(Comment, id) or abort(404)
+    return db.session.get(Comment, comment_id) or abort(404)
 
 
 @comments.route('/', methods=['POST'])
 @body(comment_schema)
 @response(comment_schema, 201)
 @other_responses({403: 'Permission denied'})
-def new(args):
+def post_comment(args):
     """Create a new comment
-
     This endpoint requires authentication.
     """
     user_id = token_auth.current_user()
-    comment = Comment(user_id=user.id, **args)
+    comment = Comment(user_id=user_id, **args)
     db.session.add(comment)
     db.session.commit()
     return comment
@@ -59,14 +56,12 @@ def new(args):
 @response(comment_schema)
 @other_responses({403: 'Not allowed to edit this comment',
                   404: 'Comment not found'})
-def put(data, id):
+def put_comment(data, comment_id):
     """Edit a comment
-
     This endpoint requires authentication.
     """
-    comment = db.session.get(Comment, id) or abort(404)
-    if comment.user_id != token_auth.current_user().id and \
-        token_auth.current_user().can(Permission.MODERATE_COMMENTS):
+    comment = db.session.get(Comment, comment_id) or abort(404)
+    if comment.user_id != token_auth.current_user().id:
         abort(403)
     comment.update(data)
     db.session.commit()
@@ -76,12 +71,11 @@ def put(data, id):
 @comments.route('/<int:id>', methods=['DELETE'])
 @authenticate(token_auth)
 @other_responses({403: 'Not allowed to delete the comment'})
-def delete(id):
+def delete_comment(comment_id):
     """Delete a comment
-
     This endpoint requires authentication.
     """
-    comment = db.session.get(Comment, id) or abort(404)
+    comment = db.session.get(Comment, comment_id) or abort(404)
     if comment.user_id != token_auth.current_user().id and \
         token_auth.current_user().can(Permission.MODERATE_COMMENTS):
         abort(403)

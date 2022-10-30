@@ -1,5 +1,4 @@
-from marshmallow import validate, validates, validates_schema, \
-    ValidationError, post_dump
+from marshmallow import validate, validates, ValidationError, post_dump
 import requests
 from api import ma, db
 from api.auth import token_auth
@@ -63,18 +62,18 @@ class UserSchema(ma.SQLAlchemySchema):
     bitcoin_address = ma.auto_field()
 
     @validates('username')
-    def validate_username(self, value):
-        if User.query.filter_by(username=value).first():
+    def validate_username(username):
+        if User.query.filter_by(username=username).first():
             raise ValidationError('Use a different username.')
-        if not value.isalnum():
+        if not username.isalnum():
             raise ValidationError('Username must be alphanumeric.')
-        if len(value) < 8:
+        if len(username) < 8:
             raise ValidationError('Username must be at least 8 characters long.')
-        if len(value) > 64:
+        if len(username) > 64:
             raise ValidationError('Username must be at most 64 characters long.')
 
     @validates('email')
-    def validate_email(self, value):
+    def validate_email(value):
         if User.query.filter_by(email=value).first():
             raise ValidationError('Use a different email.')
         if not validate.Email()(value):
@@ -83,7 +82,7 @@ class UserSchema(ma.SQLAlchemySchema):
             raise ValidationError('Email must be at most 64 characters long.')
 
     @validates('password')
-    def validate_password(self, value):
+    def validate_password(value):
         if len(value) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
         if len(value) > 128:

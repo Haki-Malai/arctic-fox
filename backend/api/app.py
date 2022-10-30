@@ -5,13 +5,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 from apifairy import APIFairy
-from werkzeug.exceptions import HTTPException
 
 db = SQLAlchemy()
 apifairy = APIFairy()
 ma = Marshmallow()
 mail = Mail()
 cors = CORS()
+
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -46,9 +46,7 @@ def create_app(config_name):
     app.register_blueprint(notifications, url_prefix='/api/notification')
     from api.tasks import tasks
     app.register_blueprint(tasks, url_prefix='/api/tasks')
-
-    @app.route('/')
-    def index():  # pragma: no cover
-        return redirect(url_for('apifairy.docs'))
+    from api.documentation import documentation
+    app.register_blueprint(documentation)
 
     return app

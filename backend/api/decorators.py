@@ -1,7 +1,5 @@
-from api.app import db
 from api.schemas import StringPaginationSchema, PaginatedCollection
 from functools import wraps
-from flask import abort
 from apifairy import arguments, response
 from sqlalchemy.sql.expression import desc
 
@@ -19,7 +17,7 @@ def paginated_response(schema, max_limit=25, order_by=None,
                 if order_by is not None:
                     if order_direction == 'desc':
                         query = query.order_by(desc(order_by))
-                    else: 
+                    else:
                         query = query.order_by(order_by)
 
                 count = query.count()

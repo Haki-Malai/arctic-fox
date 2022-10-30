@@ -1,12 +1,12 @@
-from random import randint
-from sqlalchemy.exc import IntegrityError
-from faker import Faker
 from . import db
+from sqlalchemy.exc import IntegrityError
 from api.models import User, Post, follower, Comment, Notification, Task, assignment
+from faker import Faker
 from flask import current_app
+from secrets import randbelow
 
 
-def fake_users(count=10):
+def fake_users(count=10):  # nosec
     fake = Faker()
     u = User(
             username='username',
@@ -18,9 +18,9 @@ def fake_users(count=10):
             location=fake.city(),
             member_since=fake.past_date())
     db.session.add(u)
-    print('Default admin: "useruser"')
-    print('Generating fake users...')
+    print('Default user-admin: "useruser"')
     for i in range(count):
+        print('Generating fake user %d' % i, end="\r")
         u = User(
             username=fake.user_name(),
             email=fake.email(),
@@ -36,14 +36,13 @@ def fake_users(count=10):
         except IntegrityError:
             db.session.rollback()
 
-            
-def fake_follows(count=100):
-    fake = Faker()
+
+def fake_follows(count=100):  # nosec
     user_count = User.query.count()
-    print('Generating fake follows...')
     for i in range(count):
-        u1 = User.query.offset(randint(0, user_count - 1)).first()
-        u2 = User.query.offset(randint(0, user_count - 1)).first()
+        print('Generating fake follow %d' % i, end="\r")
+        u1 = User.query.offset(randbelow(user_count)).first()
+        u2 = User.query.offset(randbelow(user_count)).first()
         db.session.execute(follower.insert().values(
             follower_id=u1.id,
             followed_id=u2.id
@@ -54,12 +53,12 @@ def fake_follows(count=100):
             db.session.rollback()
 
 
-def fake_posts(count=20):
+def fake_posts(count=20):  # nosec
     fake = Faker()
     user_count = User.query.count()
-    print('Generating fake posts...')
     for i in range(count):
-        u = User.query.offset(randint(0, user_count - 1)).first()
+        print('Generating fake post %d' % i, end="\r")
+        u = User.query.offset(randbelow(user_count)).first()
         p = Post(
             body=fake.text(),
             timestamp=fake.past_date(),
@@ -72,14 +71,14 @@ def fake_posts(count=20):
             db.session.rollback()
 
 
-def fake_comments(count=50):
+def fake_comments(count=50):  # nosec
     fake = Faker()
     user_count = User.query.count()
     post_count = Post.query.count()
-    print('Generating fake comments...')
     for i in range(count):
-        u = User.query.offset(randint(0, user_count - 1)).first()
-        p = Post.query.offset(randint(0, post_count - 1)).first()
+        print('Generating fake comments %d' % i, end="\r")
+        u = User.query.offset(randbelow(user_count)).first()
+        p = Post.query.offset(randbelow(post_count)).first()
         c = Comment(
             body=fake.text(),
             timestamp=fake.past_date(),
@@ -93,13 +92,14 @@ def fake_comments(count=50):
             db.session.rollback()
 
 
-def fake_notifications(count=50):
+def fake_notifications(count=50):  # nosec
     fake = Faker()
     user_count = User.query.count()
-    print('Generating fake notifications...')
     for i in range(count):
-        u = User.query.offset(randint(0, user_count - 1)).first()
-        n = Notificatin.query.offset(randint(0, post_count - 1)).first()
+        print('Generating fake notifications %d' % i, end="\r")
+        u = User.query.offset(randbelow(user_count)).first()
+        n = Notification(user_id=u.id, body=fake.text(),\
+            timestamp=fake.past_date())
         db.session.add(n)
         try:
             db.session.commit()
@@ -107,13 +107,13 @@ def fake_notifications(count=50):
             db.session.rollback()
 
     
-def fake_tasks(count=50):
+def fake_tasks(count=50):  # nosec
     fake = Faker()
     user_count = User.query.filter_by().count()
-    print('Generating fake tasks...')
     for i in range(count):
-        assigneed_from = User.query.offset(randint(0, user_count - 1)).first()
-        assigned_to = User.query.offset(randint(0, user_count - 1)).first()
+        print('Generating fake task %d' % i, end="\r")
+        assigneed_from = User.query.offset(randbelow(user_count)).first()
+        assigned_to = User.query.offset(randbelow(user_count)).first()
         t = Task(
             name=fake.bs(),
             description=fake.text(),

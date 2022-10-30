@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from tests.base_test_case import BaseTestCase
+from json import JSONDecodeError
 from unittest import mock
 
 
@@ -174,16 +175,17 @@ class AuthenticationTestCase(BaseTestCase):
             rv = self.client.post('/api/tokens/reset', json={
                 'email': 'bad@example.com',
             })
-            self.assertTrue(rv.status_code == 204)
+            self.assertTrue(rv.status_code == 400)
             rv = self.client.post('/api/tokens/reset', json={
                 'email': self.email,
             })
+            with self.assertRaises(JSONDecodeError):
+                rv.json
             self.assertTrue(rv.status_code == 204)
         send_email.assert_called_once()
         self.assertTrue(send_email.call_args[0] == (
             self.email, 'Reset Your Password', 'reset'))
         reset_token = send_email.call_args[1]['token']
-        reset_url = send_email.call_args[1]['url']
 
         rv = self.client.put('/api/tokens/reset', json={
             'token': reset_token + 'x',

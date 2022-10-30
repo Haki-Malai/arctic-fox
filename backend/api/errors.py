@@ -28,13 +28,11 @@ def db_integrity_error(error):  # pragma: no cover
 
 @errors.app_errorhandler(SQLAlchemyError)
 def db_error(error):  # pragma: no cover
-        return jsonify({
-            'code': InternalServerError.code,
-            'message': InternalServerError().name,
-            'description': InternalServerError.description,
-            'errors': {'username': 'Username already exists'},
-            'fields': ['username']
-        }), 500
+    return jsonify({
+        'code': InternalServerError.code,
+        'message': InternalServerError().name,
+        'description': InternalServerError.description,
+    }), 500
 
 @apifairy.error_handler
 def validation_error(code, messages):  # pragma: no cover

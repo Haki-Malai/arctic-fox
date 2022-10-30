@@ -1,5 +1,5 @@
 from config import config
-from flask import Flask, redirect, url_for
+from flask import Flask
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -14,6 +14,9 @@ cors = CORS()
 
 
 def create_app(config_name):
+    """
+    Create a Flask app using the app factory pattern.
+    """
     app = Flask(__name__)
     app.url_map.strict_slashes = False
     # Register cli commands

@@ -61,4 +61,4 @@ And others like [Flask-Mail](https://pythonhosted.org/Flask-Mail/),
   - Create a new secret with the name `HEROKU_EMAIL` and paste your heroku email as the value.
   - Now the app will be automatically deployed to heroku when you push to GitHub.
 """
-from api.app import create_app, db, ma  # noqa: F401
+from api.app import create_app, db, ma

@@ -1,7 +1,7 @@
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 from api import db
-from api.models import Task, assignment
+from api.models import Task
 from api.schemas import TaskSchema, \
     DateTimePaginationSchema, EmptySchema
 from api.auth import token_auth

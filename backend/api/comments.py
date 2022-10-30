@@ -1,5 +1,5 @@
 from flask import Blueprint, abort
-from api.models import Post, Comment
+from api.models import Comment
 from api.schemas import CommentSchema, DateTimePaginationSchema
 from api.auth import token_auth
 from api.decorators import paginated_response
@@ -76,8 +76,7 @@ def delete_comment(comment_id):
     This endpoint requires authentication.
     """
     comment = db.session.get(Comment, comment_id) or abort(404)
-    if comment.user_id != token_auth.current_user().id and \
-        token_auth.current_user().can(Permission.MODERATE_COMMENTS):
+    if comment.user_id != token_auth.current_user():
         abort(403)
     db.session.delete(comment)
     db.session.commit()

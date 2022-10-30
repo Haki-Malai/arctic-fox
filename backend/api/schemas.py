@@ -1,8 +1,8 @@
-from marshmallow import validate, validates, ValidationError, post_dump
+from marshmallow import validate, validates, ValidationError
 import requests
 from api import ma, db
 from api.auth import token_auth
-from api.models import User, Post, Comment, Notification, Task
+from api.models import User, Post, Comment, Notification, Task, assignment
 
 paginated_schema_cache = {}
 
@@ -184,18 +184,10 @@ class TaskSchema(ma.SQLAlchemySchema):
         res = requests.get('https://api.blockcypher.com/v1/btc/main/txs/' + txid)
         if res.status_code != 200:
             raise ValidationError('Invalid transaction id')
-        assigned_id = assignment.select().where(assignment.c.task_id == self.id).first()
+        assigned_id = assignment.query.filter_by(task_id = self.id).first()
         user = db.session.get(User, assigned_id)
         if user.bitcoin_address not in res.json()['addresses']:
             raise ValidationError('Transaction does not match assigned user')
-
-
-class TokenSchema(ma.Schema):
-    class Meta:
-        ordered = True
-
-    access_token = ma.String(required=True)
-    refresh_token = ma.String()
 
 
 class PasswordResetRequestSchema(ma.Schema):

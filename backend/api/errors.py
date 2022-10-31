@@ -36,11 +36,12 @@ def db_error(error):  # pragma: no cover
 
 @apifairy.error_handler
 def validation_error(code, messages):  # pragma: no cover
+    err_key = list(messages.keys())[0]
     return jsonify({
         'code': code,
         'message': 'Validation Error',
         'description': ('The server found one or more errors in the '
                         'information that you sent.'),
-        'errors': messages['json'],
-        'fields': [k for k in messages['json'].keys()],
+        'errors': messages[err_key],
+        'fields': [k for k in messages[err_key].keys()]
     }), code

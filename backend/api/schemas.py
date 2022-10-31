@@ -63,7 +63,7 @@ class UserSchema(ma.SQLAlchemySchema):
     bitcoin_address = ma.auto_field()
 
     @validates('username')
-    def validate_username(username):
+    def validate_username(self, username):
         if User.query.filter_by(username=username).first():
             raise ValidationError('Use a different username.')
         if not username.isalnum():
@@ -74,7 +74,7 @@ class UserSchema(ma.SQLAlchemySchema):
             raise ValidationError('Username must be at most 64 characters long.')
 
     @validates('email')
-    def validate_email(value):
+    def validate_email(self, value):
         if User.query.filter_by(email=value).first():
             raise ValidationError('Use a different email.')
         if not validate.Email()(value):
@@ -83,7 +83,7 @@ class UserSchema(ma.SQLAlchemySchema):
             raise ValidationError('Email must be at most 64 characters long.')
 
     @validates('password')
-    def validate_password(value):
+    def validate_password(self, value):
         if len(value) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
         if len(value) > 128:

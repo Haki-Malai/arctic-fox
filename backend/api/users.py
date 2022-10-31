@@ -34,10 +34,7 @@ def get_users():
 @other_responses({400: 'Bad Request', 422: 'Unprocessable Entity'})
 def post_user(args):
     """Register a new user
-    The following fields are required:
-    - `username`: the username for the user
-    - `email`: the email address for the user
-    - `password`: the password for the user
+    Must provide required fields.
     """
     user = User(**args)
     db.session.add(user)

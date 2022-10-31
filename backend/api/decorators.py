@@ -1,3 +1,4 @@
+from ast import arg
 from api.schemas import StringPaginationSchema, PaginatedCollection
 from functools import wraps
 from apifairy import arguments, response
@@ -14,26 +15,31 @@ def paginated_response(schema, max_limit=25, order_by=None,
             pagination = args.pop(-1)
             query = f(*args, **kwargs)
             if query is not None:
+                count = query.count()
                 if order_by is not None:
                     if order_direction == 'desc':
                         query = query.order_by(desc(order_by))
                     else:
                         query = query.order_by(order_by)
 
-                count = query.count()
                 limit = pagination.get('limit', max_limit)
                 if limit > max_limit:
                     query = query.limit(max_limit)
                 else:
                     query = query.limit(limit)
 
+                page = pagination.get('page', 0)
+                if page:
+                    query = query.offset(page * limit)
+
                 data = query.all()
                 return {
                     'data': data,
                     'pagination': {
                         'limit': limit,
-                        'count': len(data),
-                        'total': count,
+                        'page': page,
+                        'total': len(data),
+                        'count': count,
                     }
                 }
 

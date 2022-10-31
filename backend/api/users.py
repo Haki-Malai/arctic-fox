@@ -22,12 +22,8 @@ update_user_schema = UpdateUserSchema()
 @paginated_response(users_schema)
 def get_users():
     """Retrieve all users
-    This is a paginated endpoint. You can pass the following query
-    parameters to paginate the results:
-    - `page`: the page number to retrieve (default: 1)
-    - `max_limit`: the number of items per page (default: 25)
-    - `order_by`: the field to order the results by (default: None)
-    - `order_direction`: the direction to order the results by (default: asc)
+    This is a paginated endpoint. You can pass query
+    parameters to paginate the results.
     """
     return User.query
 

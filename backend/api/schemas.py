@@ -25,6 +25,7 @@ class StringPaginationSchema(ma.Schema):
         ordered = True
 
     limit = ma.Integer()
+    page = ma.Integer()
     count = ma.Integer(dump_only=True)
     total = ma.Integer(dump_only=True)
 

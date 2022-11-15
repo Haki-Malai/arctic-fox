@@ -34,3 +34,4 @@ SQLAlchemy==1.4.42
 urllib3==1.26.12
 webargs==8.2.0
 Werkzeug==2.2.2
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

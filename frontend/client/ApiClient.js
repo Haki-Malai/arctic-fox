@@ -11,10 +11,15 @@ class ApiClient {
     }
     
     async isAuthenticated() {
-        if (await AsyncStorage.getItem('accessToken')) {
-            const response = await this.get('/tokens');
-            return response.ok;
-        } else {
+        try {
+            if (await AsyncStorage.getItem('accessToken')) {
+                const response = await this.get('/tokens');
+                return response.ok;
+            } else {
+                return false;
+            }
+        } catch(error) {
+            console.log(error);
             return false;
         }
     }

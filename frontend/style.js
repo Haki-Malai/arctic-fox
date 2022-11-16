@@ -91,5 +91,14 @@ export default StyleSheet.create({
 		width: 100,
 		height: 100,
 		borderRadius: 50,
+	},
+	bar: {
+		maxWidth: 400,
+		width: '100%',
+		alignSelf: 'center',
+		backgroundColor: BLUE
+	},
+	barContainer: {
+		backgroundColor: SUPER_FADED_BLUE,
 	}
 })

@@ -1,17 +1,15 @@
 import React from 'react';
+import { Text } from 'react-native-paper';
+import Background from '../components/Background';
 import { Image } from 'react-native';
+import Header from '../components/Header';
+import Button from '../components/Button';
 import Logo from '../components/Logo';
 import { apiClient } from '../client/ApiClient';
 import styles from '../style';
 import { BackHandler } from 'react-native';
-import HomeScreen from './homeScreen';
-import ProfileScreen from './profileScreen';
-import SettingsScreen from './settingsScreen';
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import style from '../style';
 
-
-export default class DashboardScreen extends React.Component {
+export default class HomeScreen extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -58,14 +56,14 @@ export default class DashboardScreen extends React.Component {
 			var image = <Image source={{uri:this.state.userData.avatar}} style={styles.image}></Image>
 		}
 
-		const Tab = createMaterialBottomTabNavigator();
-
 		return (
-			<Tab.Navigator barStyle={styles.bar} style={styles.barContainer} screenOptions={{headerShown:false}} >
-				<Tab.Screen name='HomeScreen' component={HomeScreen} />
-				<Tab.Screen name='SettingsScreen' component={SettingsScreen} />
-				<Tab.Screen name='ProfileScreen' component={ProfileScreen} />
-			</Tab.Navigator>
+			<Background>
+				{image}
+				<Header>Hello {this.state.userData.username}!</Header>
+				<Text style={styles.text}>
+					You are now logged in and the session tokens are saved for next time! This is your unique gravatar!
+				</Text>
+			</Background>
 		)
 	}
 }

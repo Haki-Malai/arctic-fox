@@ -18,7 +18,7 @@ export default function App() {
     const [navigationStart, setNavigationStart] = useState('WelcomeScreen');
 
     useEffect(() => {
-        apiClient.isAuthenticated()? setNavigationStart('DashboardScreen') : null;
+        apiClient.isAuthenticated() === true? setNavigationStart('DashboardScreen') : null;
     });
 
     if (!isLoadingComplete) {

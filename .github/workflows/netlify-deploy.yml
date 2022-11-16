@@ -19,6 +19,8 @@ jobs:
 
       - name: Build
         working-directory: ./frontend
+        env:
+          API_URL: https://arcticfox.herokuapp.com/api
         run: npx expo export:web
 
       - name: Deploy

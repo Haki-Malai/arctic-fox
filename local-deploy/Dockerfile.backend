@@ -1,13 +1,9 @@
-FROM python:3.8.10
-
+FROM python:3.10-alpine
 LABEL maintainer="Haki-Malai" email="hakimalaj@outlook.com"
-
 WORKDIR /arcticfox
 
 COPY backend .
-
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
-
 CMD ["gunicorn", "-b", ":5000", "index:app"]

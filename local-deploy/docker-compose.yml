@@ -1,13 +1,13 @@
 services:
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ../
+      dockerfile: local-deploy/Dockerfile.backend
     image: backend
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ../
+      dockerfile: local-deploy/Dockerfile.frontend
     image: frontend
     ports:
       - "3000:80"

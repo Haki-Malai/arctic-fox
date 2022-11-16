@@ -21,6 +21,7 @@ class BaseTestCase(unittest.TestCase):  # nosec
         db.session.add(self.user)
         db.session.commit()
         self.client = self.app.test_client()
+        self.json = self.client.get('/apispec.json').json
 
     def tearDown(self):
         db.session.close()

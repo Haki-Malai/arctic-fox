@@ -1,6 +1,7 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config:
     # Flask
     SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "default-secret-key")

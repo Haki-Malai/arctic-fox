@@ -7,7 +7,7 @@ from unittest import mock
 class AuthenticationTestCase(BaseTestCase):
 
     def test_no_auth(self):
-        rv = self.client.get('http://localhost:5001/api/users')
+        rv = self.client.get('/api/users')
         self.assertTrue(rv.status_code == 401)
 
     def test_get_token(self):

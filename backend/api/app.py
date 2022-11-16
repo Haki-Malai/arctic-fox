@@ -12,7 +12,7 @@ apifairy = APIFairy()
 ma = Marshmallow()
 mail = Mail()
 migrate = Migrate()
-cors = CORS()
+cors = CORS(resources={r"/*": {"origins": "*"}})
 
 
 def create_app(config_name):

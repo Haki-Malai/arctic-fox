@@ -14,6 +14,8 @@ class Config:
     POSTS_PER_PAGE = 20
     COMMENTS_PER_PAGE = 30
     FOLLOWERS_PER_PAGE = 50
+    CORS_HEADERS = 'Content-Type'
+    CORS_SUPPOERTS_CREDENTIALS = True
     # Flask-Mail
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.office365.com")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))

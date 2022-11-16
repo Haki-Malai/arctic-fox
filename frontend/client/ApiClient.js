@@ -1,10 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {encode as btoa} from 'base-64';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig.extra.apiUrl;
 
 
 class ApiClient {
     constructor() {
-        this.baseUrl = 'https://arcticfox.herokuapp.com/api';
+        this.baseUrl = API_URL;
     }
     
     async isAuthenticated() {

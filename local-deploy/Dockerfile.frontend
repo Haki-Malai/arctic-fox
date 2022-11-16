@@ -5,6 +5,9 @@ WORKDIR /arcticfox
 ENV PATH /arcticfox/node_modules/.bin:$PATH
 COPY frontend .
 RUN npm install --force
+
+ARG API_URL=http://localhost:5000/api
+ENV API_URL=$API_URL
 RUN npx expo export:web
 
 # Build an nginx container

@@ -4,6 +4,7 @@ WORKDIR /arcticfox
 
 COPY backend .
 RUN pip install -r requirements.txt
+RUN flask --app index script fake
 
 EXPOSE 5000
 CMD ["gunicorn", "-b", ":5000", "index:app"]

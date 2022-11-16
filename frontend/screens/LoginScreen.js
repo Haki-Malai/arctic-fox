@@ -66,6 +66,7 @@ constructor(props) {
 				onChangeText={(text) => this.setPassword(text)}
 				error={!!this.state.error}
 				secureTextEntry
+				onSubmitEditing={() => this.onLoginPressed()}
 			/>
 			<View style={styles.forgotPassword}>
 			<TouchableOpacity

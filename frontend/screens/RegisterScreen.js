@@ -114,6 +114,7 @@ export default class RegisterScreen extends React.Component {
 				error={!!this.state.passwordError}
 				errorText={this.state.passwordError}
 				secureTextEntry
+				onSubmitEditing={() => this.onSignUpPressed()}
 			/>
 			<Button 
 				mode="contained"

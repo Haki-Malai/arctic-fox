@@ -13,4 +13,4 @@ RUN npx expo export:web
 # Build an nginx container
 FROM nginx:stable-alpine
 COPY --from=web-build /arcticfox/web-build /usr/share/nginx/html
-COPY local-deploy/nginx.default.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.default.conf /etc/nginx/conf.d/default.conf

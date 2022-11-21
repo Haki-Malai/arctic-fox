@@ -2,7 +2,8 @@
 
 [![](https://img.shields.io/static/v1?label=python&message=3.10.7&color=success)]() [![](https://img.shields.io/static/v1?label=node&message=16.18.1&color=green)]() [![Netlify Status](https://api.netlify.com/api/v1/badges/01b5c2e3-deed-4d91-aa68-a5067f4b0cba/deploy-status)](https://app.netlify.com/sites/arcticfoxweb/deploys) [![Render Status](https://img.shields.io/website?label=API%20docs&url=https%3A%2F%2Farcticfox.onrender.com)]()
 
-## [React Native Web App](https://arcticfoxweb.netlify.app) 
+## [React Native Web App](https://arcticfoxweb.netlify.app)
+Hosted by Netlify and gets automaticaly deployed with github actions on commit using netlify. Retrieves data from API that's hosted by render.
 
 ## [Flask API documentation](https://arcticfox.onrender.com) 
 

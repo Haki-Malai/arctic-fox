@@ -23,13 +23,13 @@ And others like [Flask-Mail](https://pythonhosted.org/Flask-Mail/),
   - With Docker:
     - Install [Docker](https://docs.docker.com/get-docker/).
     - Clone the [repository](https://github.com/Haki-Malai/arctic-fox).
-    - Cd into the cloned repository.
-    - Run `docker build -t arcticfox` and wait for the build to finish.
+    - Run `cd arctic-fox`.
+    - Run `docker build -t arcticfox -f docker/Dockerfile.backend .` and wait for the build to finish.
     - Run `docker run -p 5000:5000 arcticfox` and wait for the container to start.
     - The API should be available at http://localhost:5000.
   - Directly from your machine:
     - Clone the [repository](https://github.com/Haki-Malai/arctic-fox).
-    - Cd into the backend folder of the cloned repository.
+    - Run `cd arctic-fox`.
     - Create a virtual environment using
     [virtualenv](https://virtualenv.pypa.io/en/latest/) or
     [venv](https://docs.python.org/3/library/venv.html).
@@ -47,6 +47,7 @@ And others like [Flask-Mail](https://pythonhosted.org/Flask-Mail/),
   and run `heroku login` to login to your heroku account. 
   - Then run `heroku create <app-name>`.
   - Login to the heroku container registry by running `heroku container:login`.
+  - Cd into backend directory.
   - Push the docker image to heroku by running `heroku container:push web`.
   - Release the docker image to heroku by running `heroku container:release web`.
   - Open the app by running `heroku open`.
@@ -60,5 +61,11 @@ And others like [Flask-Mail](https://pythonhosted.org/Flask-Mail/),
   - Create a new secret with the name `HEROKU_APP_NAME` and paste your heroku app name as the value.
   - Create a new secret with the name `HEROKU_EMAIL` and paste your heroku email as the value.
   - Now the app will be automatically deployed to heroku when you push to GitHub.
+
+#### If you want to run both frontend and backend locally, you can follow these steps:
+  - Clone the repository.
+  - Run `cd arctic-fox/docker`.
+  - Run `docker-compose up`.
+  - The nginx server should be available at http://localhost:3000.
 """
 from api.app import create_app, db, ma

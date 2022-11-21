@@ -7,11 +7,13 @@ from api.models import User, Post, Comment, Notification, Task, assignment
 paginated_schema_cache = {}
 
 
-"""Schemas for API responses
-    Self-explanatory: no need for comments here
-    
-    Read the docs for more info:
-    https://marshmallow.readthedocs.io/en/latest/
+"""
+Schemas for API responses
+
+Self-explanatory: no need for comments here
+
+Read the docs for more info:
+https://marshmallow.readthedocs.io/en/latest/
 """
 
 

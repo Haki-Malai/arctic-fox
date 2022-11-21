@@ -1,4 +1,4 @@
-from . import db
+from api import db
 from sqlalchemy.exc import IntegrityError
 from api.models import User, Post, follower, Comment, Notification, Task, assignment
 from faker import Faker
@@ -9,16 +9,16 @@ from secrets import randbelow
 def fake_users(count=10):  # nosec
     fake = Faker()
     u = User(
-            username='username',
-            password='password',
-            email=current_app.config['MAIL_FOR_TEST_OR_DEBUG'] or 'test@test.gr',
-            bitcoin_address=fake.md5(),
-            confirmed=True,
-            name=fake.name(),
-            location=fake.city(),
-            member_since=fake.past_date())
+        username='username',
+        password='password',
+        email=current_app.config['MAIL_FOR_TEST_OR_DEBUG'] or 'test@test.gr',
+        bitcoin_address=fake.md5(),
+        confirmed=True,
+        name=fake.name(),
+        location=fake.city(),
+        member_since=fake.past_date())
     db.session.add(u)
-    print('Default user-admin: "useruser"')
+    print('Default user-admin: "useruser:password"')
     for i in range(count):
         print('Generating fake user %d' % i, end="\r")
         u = User(

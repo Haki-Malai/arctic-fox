@@ -31,6 +31,20 @@ follower = db.Table(
 
 
 class Token(db.Model):
+    """Token
+    ----------------
+    Attributes:
+        id: int
+        access_token: str
+        access_expiration: datetime
+        refresh_token: str
+        refresh_expiration: datetime
+        user_id: int
+    ----------------
+    Methods:
+        generate: generate access and refresh tokens
+        expire: expire access and refresh tokens
+    """
     id = db.Column(db.Integer, primary_key=True)
     access_token = db.Column(db.String(64), nullable=False, index=True)
     access_expiration = db.Column(db.DateTime, nullable=False)
@@ -65,6 +79,51 @@ class Token(db.Model):
 
 
 class User(Updateable, db.Model):
+    """User
+    ----------------
+    Attributes:
+        id: int
+        username: str
+        email: str
+        password_hash: str
+        role: str
+        confirmed: bool
+        bitcoin_address: str
+        name: str
+        location: str
+        member_since: datetime
+        last_seen: datetime
+        avatar: str
+        tokens: relationship
+        posts: relationship
+        comments: relationship
+        assigneed_tasks: relationship
+        assigned_tasks: relationship
+        following: relationship
+        followers: relationship
+    ----------------
+    Methods:
+        verify_password: check if password matches hashed password
+        generate_auth_token: generate an auth token
+        revoke_all: revoke all auth tokens
+        generate_confirm_token: generate a confirm token
+        generate_reset_token: generate a reset token
+        ping: update last_seen
+        follow: follow user
+        unfollow: unfollow user
+        is_following: check if user is following
+        is_following_by: check if user is followed by
+        add_notification: add notification
+    ----------------
+    Static Methods:
+        verify_access_token: verify access token
+        verufy_refresh_token: verify refresh token
+        verify_confirm_token: verify a confirm token
+        verify_reset_token: verify a reset token
+    ----------------
+    Properties:
+        password: raise AttributeError
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True)
@@ -238,6 +297,18 @@ class User(Updateable, db.Model):
 
 
 class Post(db.Model):
+    """Post
+    ----------------
+    Attributes:
+        id: int
+        body: str
+        timestamp: datetime
+        author_id: int fk
+        comments: relationship
+    ----------------
+    Methods:
+        update: update post body
+    """
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -252,6 +323,15 @@ class Post(db.Model):
 
 
 class Comment(db.Model):
+    """Comment
+    ----------------
+    Attributes:
+        id: int
+        body: str
+        timestamp: datetime
+        user_id: int fk
+        post_id: int fk
+    """
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -263,6 +343,17 @@ class Comment(db.Model):
 
 
 class Notification(db.Model):
+    """Notification
+    ----------------
+    Attributes:
+        id: int
+        body: str
+        read: bool
+        user_id: int fk
+        post_id: int fk
+        comment_id: int fk
+        timestamp: datetime
+    """
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     read = db.Column(db.Boolean, default=False)
@@ -279,6 +370,33 @@ class Notification(db.Model):
 
 
 class Task(Updateable, db.Model):
+    """Task
+    ----------------
+    Attributes:
+        id: int
+        name: str
+        value: int
+        description: str
+        completed: bool
+        timestamp: datetime
+        start_date: datetime
+        due_date: datetime
+        end_date: datetime
+        last_updated_date: datetime
+        url: str
+        input_date: datetime
+        txid: str
+        assignee_id: int fk
+        assignee: relationship
+    ----------------
+    Methods:
+        start: start task
+        ping: update last_updated_date
+    ----------------
+    Properties:
+        transaction_status: get bitcoin transaction status
+        transaction_amount: get bitcoin amount transaction
+    """
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(16), index=True)
     value = db.Column(db.Float)

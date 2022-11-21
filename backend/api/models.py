@@ -17,6 +17,9 @@ class Updateable:
 
 
 assignment = db.Table(
+    """
+        Relationship between tasks and users
+    """
     'assignment',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
     db.Column('assigned_id', db.Integer, db.ForeignKey('user.id'))
@@ -24,6 +27,9 @@ assignment = db.Table(
 
 
 follower = db.Table(
+    """
+        Inner relationship between users
+    """
     'follower',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))

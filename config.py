@@ -36,21 +36,11 @@ class Config:
     CACHE_REDIS_URL = os.environ.get(
         'CACHE_REDIS_URL', f'redis://{CACHE_REDIS_HOST}:{CACHE_REDIS_PORT}/{CACHE_REDIS_DB}')
 
-    # Celery options
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
-
-    # AWS
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    AWS_REGION = os.environ.get('AWS_REGION')
-    AWS_BUCKET = os.environ.get('AWS_BUCKET')
-
     # Security options
     SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
     ACCESS_TOKEN_MINUTES = int(os.environ.get('ACCESS_TOKEN_MINUTES') or '15')
     REFRESH_TOKEN_DAYS = int(os.environ.get('REFRESH_TOKEN_DAYS') or '7')
-    REFRESH_TOKEN_IN_COOKIE = as_bool(os.environ.get('REFRESH_TOKEN_IN_COOKIE') or 'yes')
     USE_CORS = as_bool(os.environ.get('USE_CORS') or 'yes')
     CORS_SUPPORTS_CREDENTIALS = True
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')

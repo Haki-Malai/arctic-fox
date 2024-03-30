@@ -9,7 +9,8 @@ from apifairy import APIFairy
 import logging
 
 from config import Config
-from utils.aws_media_toolkit import AWSMediaToolkit
+
+from typing import Type, Dict, Any
 
 db = Alchemical()
 migrate = Migrate()
@@ -49,12 +50,10 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     app.register_blueprint(tokens_bp, url_prefix='/api/v1')
     from api.routes.users import bp as users_bp
     app.register_blueprint(users_bp, url_prefix='/api/v1')
-    from api.routes.events import bp as events_bp
-    app.register_blueprint(events_bp, url_prefix='/api/v1')
-    from api.routes.event_user_associations import bp as event_user_associations_bp
-    app.register_blueprint(event_user_associations_bp, url_prefix='/api/v1')
-    from api.routes.media import bp as media_bp
-    app.register_blueprint(media_bp, url_prefix='/api/v1')
+    from api.routes.folders import bp as folders_bp
+    app.register_blueprint(folders_bp, url_prefix='/api/v1')
+    from api.routes.files import bp as files_bp
+    app.register_blueprint(files_bp, url_prefix='/api/v1')
 
     # CLI commands
     from cli.fake import fake
@@ -89,13 +88,15 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
 
         :returns: The shell context.
         """
+        import api.models as models
+
         ctx = {'db': db}
         for attr in dir(models):
             model = getattr(models, attr)
             if hasattr(model, '__bases__') and \
                     db.Model in getattr(model, '__bases__'):
                 ctx[attr] = model
-        return ctx    @app.route('/api/v1')
+        return ctx
 
     @app.route('/')
     @app.route('/api')

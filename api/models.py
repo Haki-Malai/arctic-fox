@@ -63,7 +63,6 @@ class User(Updateable, db.Model):
             db.session.rollback()
             return
 
-
     def generate_auth_token(self) -> None:
         """Generate a new access and refresh token."""
         token = Token(self.id)
@@ -115,7 +114,7 @@ class Folder(Updateable, db.Model):
     __tablename__ = 'folders'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    name: so.Mapped[str] = so.mapped_column(sa.String(64))
+    name: so.Mapped[str] = so.mapped_column(sa.String(64), unique=True)
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(280))
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -132,7 +131,7 @@ class File(Updateable, db.Model):
     __tablename__ = 'files'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    filename: so.Mapped[str] = so.mapped_column(sa.String(64))
+    filename: so.Mapped[str] = so.mapped_column(sa.String(64), unique=True)
     mimetype: so.Mapped[str] = so.mapped_column(sa.String(64))
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(280))
     processed: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)

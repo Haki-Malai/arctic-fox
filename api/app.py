@@ -9,6 +9,7 @@ from apifairy import APIFairy
 import logging
 
 from config import Config
+from utils.aws_wrapper import AWSWrapper
 
 from typing import Type, Dict, Any
 
@@ -19,6 +20,7 @@ cors = CORS()
 mail = Mail()
 apifairy = APIFairy()
 cache = Cache()
+aws_wrapper = AWSWrapper()
 
 
 def create_app(config_class: Type[Config] = Config) -> Flask:
@@ -40,6 +42,7 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     mail.init_app(app)
     apifairy.init_app(app)
     cache.init_app(app)
+    aws_wrapper.init_app(app)
 
     # Blueprints routes
     from api.routes.health import bp as health_bp

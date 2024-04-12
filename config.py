@@ -36,6 +36,12 @@ class Config:
     CACHE_REDIS_URL = os.environ.get(
         'CACHE_REDIS_URL', f'redis://{CACHE_REDIS_HOST}:{CACHE_REDIS_PORT}/{CACHE_REDIS_DB}')
 
+    # AWS
+    AWS_REGION = os.environ.get('AWS_REGION')
+    AWS_BUCKET = os.environ.get('AWS_BUCKET')
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
     # Security options
     SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))

@@ -1,7 +1,7 @@
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 
-from api import db
+from api import db, aws_wrapper
 from api.models import File
 from api.schemas import FileSchema, EmptySchema, PresignedPostSchema
 from api.auth import token_auth
@@ -20,9 +20,9 @@ presigned_post_schema = PresignedPostSchema()
 @authenticate(token_auth)
 @body(presigned_post_schema)
 @response(presigned_post_schema, 201)
-def pre(args):
+def pre(data: dict) -> dict:
     """Retrieve a pre-signed URL for uploading a file"""
-    return aws.generate_presigned_post(**args)
+    return aws_wrapper.generate_presigned_post(**data)
 
 
 @bp.route('/file/<int:id>', methods=['GET'])

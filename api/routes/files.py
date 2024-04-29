@@ -64,10 +64,10 @@ def images() -> List[File]:
 @authenticate(token_auth, role=[Role.ADMIN.name, Role.MODERATOR.name])
 @body(file_schema)
 @response(file_schema, 201)
-def post(args) -> File:
+def post(data: dict) -> File:
     """Create a new file"""
     user = token_auth.current_user()
-    file = file(created_by=user.id, **args)
+    file = File(created_by=user.id, **data)
     db.session.add(file)
     db.session.commit()
 

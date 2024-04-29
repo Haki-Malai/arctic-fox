@@ -77,13 +77,14 @@ class FileSchema(ma.SQLAlchemySchema):
 
     id = ma.auto_field(dump_only=True)
     filename = ma.auto_field(validate=validate.Length(max=64))
-    mimetype = ma.auto_field(dump_only=True)
+    mimetype = ma.auto_field()
     description = ma.auto_field(validate=validate.Length(max=280))
     processed = ma.auto_field(dump_only=True)
     dominant_color = ma.auto_field(dump_only=True)
     error = ma.auto_field(dump_only=True)
     created_by = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
+    folder_id = ma.auto_field()
 
     owner = ma.Nested(UserSchema, exclude=('files',), dump_only=True)
     folder = ma.Nested(FolderSchema, exclude=('files',), dump_only=True)

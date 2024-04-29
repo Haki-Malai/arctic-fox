@@ -16,7 +16,7 @@ update_file_schema = FileSchema(partial=True)
 presigned_post_schema = PresignedPostSchema()
 
 
-@bp.route('/file/pre', methods=['POST'])
+@bp.route('/files/pre', methods=['POST'])
 @authenticate(token_auth)
 @body(presigned_post_schema)
 @response(presigned_post_schema, 201)
@@ -25,7 +25,7 @@ def pre(data: dict) -> dict:
     return aws_wrapper.generate_presigned_post(**data)
 
 
-@bp.route('/file/<int:id>', methods=['GET'])
+@bp.route('/files/<int:id>', methods=['GET'])
 @authenticate(token_auth)
 @response(file_schema)
 @other_responses({404: 'File not found'})
@@ -60,7 +60,7 @@ def images() -> List[File]:
         File.mimetype.in_(['image/jpeg', 'image/png', 'image/gif']))).all()
 
 
-@bp.route('/file', methods=['POST'])
+@bp.route('/files', methods=['POST'])
 @authenticate(token_auth, role=[Role.ADMIN.name, Role.MODERATOR.name])
 @body(file_schema)
 @response(file_schema, 201)
@@ -74,7 +74,7 @@ def post(args) -> File:
     return file
 
 
-@bp.route('/file/<int:id>', methods=['PUT'])
+@bp.route('/files/<int:id>', methods=['PUT'])
 @authenticate(token_auth, role=[Role.ADMIN.name, Role.MODERATOR.name])
 @body(update_file_schema)
 @response(file_schema)
@@ -87,13 +87,13 @@ def put(data, id) -> File:
     return file
 
 
-@bp.route('/file/<int:id>', methods=['DELETE'])
+@bp.route('/files/<int:id>', methods=['DELETE'])
 @authenticate(token_auth, role=[Role.ADMIN.name, Role.MODERATOR.name])
 @response(EmptySchema, 204)
 @other_responses({404: 'File not found'})
-def delete(id) -> dict:
+def delete(id: int) -> dict:
     """Delete a file"""
-    file = db.session.get(file, id) or abort(404)
+    file = db.session.get(File, id) or abort(404)
     db.session.delete(file)
     db.session.commit()
     return {}

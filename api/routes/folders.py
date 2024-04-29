@@ -65,6 +65,6 @@ def put(data: Dict, id: int) -> Folder:
 def delete(id: int) -> Dict[str, Any]:
     """Delete a folder"""
     folder = db.session.get(Folder, id) or abort(404)
-    folder.deleted = True
+    db.session.delete(folder)
     db.session.commit()
     return {}

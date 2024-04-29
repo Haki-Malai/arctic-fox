@@ -37,8 +37,7 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
-    if app.config['USE_CORS']:
-        cors.init_app(app)
+    cors.init_app(app, resources={r'/api/*': {'origins': '*'}})
     mail.init_app(app)
     apifairy.init_app(app)
     cache.init_app(app)

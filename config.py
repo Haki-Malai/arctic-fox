@@ -47,8 +47,6 @@ class Config:
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
     ACCESS_TOKEN_MINUTES = int(os.environ.get('ACCESS_TOKEN_MINUTES') or '15')
     REFRESH_TOKEN_DAYS = int(os.environ.get('REFRESH_TOKEN_DAYS') or '7')
-    USE_CORS = as_bool(os.environ.get('USE_CORS') or 'yes')
-    CORS_SUPPORTS_CREDENTIALS = True
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
     GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI')

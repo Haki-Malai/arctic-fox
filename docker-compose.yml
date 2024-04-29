@@ -14,14 +14,6 @@ services:
     volumes:
       - ./logs:/var/log/gunicorn
 
-  celery:
-    build: .
-    command: celery -A celery_worker.celery worker --loglevel=info
-    volumes:
-      - ./src:/usr/src/app
-    depends_on:
-      - redis
-
   postgres:
     image: postgres:10.17
     restart: always
@@ -32,7 +24,7 @@ services:
     volumes:
       - arcticfox_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "5432:5432"
 
   redis:
     image: redis:latest

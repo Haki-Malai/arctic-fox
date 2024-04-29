@@ -1,7 +1,7 @@
 from marshmallow import validate
 from marshmallow_enum import EnumField
 
-from api import ma
+from api import ma, aws_wrapper
 from api.models import User, Folder, File
 from api.enums import Role
 
@@ -85,9 +85,17 @@ class FileSchema(ma.SQLAlchemySchema):
     created_by = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
     folder_id = ma.auto_field()
+    preview_url = ma.Method('get_preview_url', dump_only=True)
 
     owner = ma.Nested(UserSchema, exclude=('files',), dump_only=True)
     folder = ma.Nested(FolderSchema, exclude=('files',), dump_only=True)
+
+    def get_preview_url(self, obj: dict) -> str:
+        """Generate a URL for previewing the file if it is stored in S3.
+        
+        :return: URL for previewing the file
+        """
+        return aws_wrapper.generate_presigned_url(obj.filename)
 
 
 class TokenSchema(ma.Schema):

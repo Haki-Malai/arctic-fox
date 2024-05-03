@@ -3,10 +3,10 @@ from typing import Optional
 from datetime import datetime
 
 import sqlalchemy as sa
-from sqlalchemy import orm as so
+import sqlalchemy.orm as so
 from sqlalchemy.exc import IntegrityError
 
-from api.app import db
+from api.app import db, aws_wrapper
 from api.email import send_email
 from api.token import Token
 from api.enums import Role
@@ -147,3 +147,8 @@ class File(Updateable, db.Model):
     def __repr__(self) -> str:
         """Return a string representation of the file."""
         return f'<File {self.filename}>'
+
+
+@sa.event.listens_for(File, 'before_delete')
+def delete_s3_file(mapper, connection, target):
+    aws_wrapper.delete_file_from_s3(target.filename)

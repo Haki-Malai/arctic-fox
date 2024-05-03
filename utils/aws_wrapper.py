@@ -66,6 +66,13 @@ class AWSWrapper:
         with open(file_path, 'rb') as f:
             self.s3_client.upload_fileobj(f, self.aws_bucket, s3_key)
 
+    def delete_file_from_s3(self, s3_key: str) -> None:
+        """Delete a file from S3.
+
+        :param s3_key: The S3 key (filename) where the file is stored.
+        """
+        self.s3_client.delete_object(Bucket=self.aws_bucket, Key=s3_key)
+
     def generate_presigned_url(self, s3_key: str, expiration: int=3600) -> Optional[str]:
         """Generate a presigned URL to share an S3 object.
 
@@ -137,14 +144,16 @@ class AWSWrapper:
 if __name__ == '__main__':
     load_dotenv()
 
-    fake_app = {
+    fake_config = {
         'AWS_ACCESS_KEY_ID': os.getenv('AWS_ACCESS_KEY_ID'),
         'AWS_SECRET_ACCESS_KEY': os.getenv('AWS_SECRET_ACCESS_KEY'),
         'AWS_REGION': os.getenv('AWS_REGION'),
         'AWS_BUCKET': os.getenv('AWS_BUCKET')
     }
+    app = Flask(__name__)
+    app.config = fake_config
 
     aws = AWSWrapper()
-    aws.init_app(fake_app)
+    aws.init_app(app)
 
     print(aws.list_uploaded_files())

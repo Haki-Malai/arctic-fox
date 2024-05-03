@@ -150,5 +150,5 @@ class File(Updateable, db.Model):
 
 
 @sa.event.listens_for(File, 'before_delete')
-def delete_s3_file(mapper, connection, target):
+def delete_s3_file(mapper, connection, target: File):
     aws_wrapper.delete_file_from_s3(target.filename)

@@ -169,6 +169,14 @@ class AWSWrapper:
             ExpiresIn=expiration)
 
         return presigned_post
+    
+    def clean_s3_bucket(self) -> None:
+        """Delete all items (objects) from the S3 bucket."""
+        files = self.list_uploaded_files()
+        for file_key in files:
+            self.delete_file_from_s3(file_key)
+
+        print('S3 bucket cleaned successfully.')
 
 
 if __name__ == '__main__':
@@ -186,4 +194,4 @@ if __name__ == '__main__':
     aws = AWSWrapper()
     aws.init_app(app)
 
-    print(aws.generate_dominant_color(aws.list_uploaded_files()[0]))
+    print(aws.clean_s3_bucket())

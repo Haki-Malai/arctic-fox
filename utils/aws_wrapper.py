@@ -1,7 +1,10 @@
 import os
 import boto3
+import cairosvg
 from flask import Flask
 from dotenv import load_dotenv
+from colorthief import ColorThief
+from io import BytesIO
 
 from typing import List, Dict, Any, Optional
 
@@ -65,6 +68,33 @@ class AWSWrapper:
         """
         with open(file_path, 'rb') as f:
             self.s3_client.upload_fileobj(f, self.aws_bucket, s3_key)
+
+    def generate_dominant_color(self, s3_key: str) -> Optional[str]:
+        """Generate the dominant color of an image stored in S3. Supports both raster images and SVGs.
+
+        :param s3_key: The S3 key (filename) where the image is stored.
+        :return: The dominant color as a hex string. If error, returns None.
+        """
+        try:
+            response = self.get_s3_object(s3_key)
+            if response is None or 'Body' not in response:
+                return None
+
+            image_bytes = response['Body'].read()
+            
+            if s3_key.endswith('.svg'):
+                png_bytes = cairosvg.svg2png(bytestring=image_bytes)
+                image_stream = BytesIO(png_bytes)
+            else:
+                image_stream = BytesIO(image_bytes)
+
+            color_thief = ColorThief(image_stream)
+            dominant_color = color_thief.get_color(quality=1)
+
+            return '#{:02x}{:02x}{:02x}'.format(*dominant_color)
+        except Exception as e:
+            print(f'Error generating dominant color: {e}')
+            return None
 
     def delete_file_from_s3(self, s3_key: str) -> None:
         """Delete a file from S3.
@@ -156,4 +186,4 @@ if __name__ == '__main__':
     aws = AWSWrapper()
     aws.init_app(app)
 
-    print(aws.list_uploaded_files())
+    print(aws.generate_dominant_color(aws.list_uploaded_files()[0]))

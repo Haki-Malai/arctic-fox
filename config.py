@@ -69,5 +69,10 @@ class Config:
 
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
-    # MiDaS options
-    USE_LARGE_MODEL = as_bool(os.environ.get('USE_LARGE_MODEL') or 'no')
+    # Redis
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = os.environ.get('REDIS_PORT')
+    REDIS_DB = os.environ.get('REDIS_DB')
+
+    # Celery options
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')

@@ -6,6 +6,8 @@ from flask_cors import CORS
 from flask_mail import Mail
 from flask_caching import Cache
 from apifairy import APIFairy
+from celery import Celery
+import redis
 import logging
 
 from config import Config
@@ -21,14 +23,18 @@ mail = Mail()
 apifairy = APIFairy()
 cache = Cache()
 aws_wrapper = AWSWrapper()
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+rd = redis.StrictRedis(
+    host=Config.REDIS_HOST, port=Config.REDIS_PORT, db=Config.REDIS_DB)
 
 
 def create_app(config_class: Type[Config] = Config) -> Flask:
-    '''Create and configure an instance of the Flask application.
+    """Create and configure an instance of the Flask application.
 
     :param config_class: The configuration class to use.
+
     :return: The Flask application.
-    '''
+    """
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.json.sort_keys = False
@@ -42,6 +48,7 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     apifairy.init_app(app)
     cache.init_app(app)
     aws_wrapper.init_app(app)
+    celery.conf.update(app.config)
 
     # Blueprints routes
     from api.routes.health import bp as health_bp

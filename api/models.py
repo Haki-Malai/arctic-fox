@@ -6,7 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 from sqlalchemy.exc import IntegrityError
 
-from api.app import db, aws_wrapper
+from api.app import db, aws_wrapper, celery
 from api.email import send_email
 from api.token import Token
 from api.enums import Role
@@ -149,6 +149,14 @@ class File(Updateable, db.Model):
         return f'<File {self.filename}>'
 
 
+@sa.event.listens_for(File, 'after_insert')
+def set_dominant_color(mapper, connection, target: File):
+    celery.send_task('worker.tasks.file_tasks.set_dominant_color',
+                     args=[target.id])
+
+
 @sa.event.listens_for(File, 'before_delete')
 def delete_s3_file(mapper, connection, target: File):
-    aws_wrapper.delete_file_from_s3(target.filename)
+    """Delete file from S3 before deleting the record."""
+    celery.send_task('worker.tasks.file_tasks.delete_s3_file',
+                     args=[target.filename])

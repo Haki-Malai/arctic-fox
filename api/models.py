@@ -6,7 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 from sqlalchemy.exc import IntegrityError
 
-from api.app import db, aws_wrapper, celery
+from api.app import db, celery
 from api.email import send_email
 from api.token import Token
 from api.enums import Role

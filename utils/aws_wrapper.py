@@ -1,6 +1,5 @@
 import os
 import boto3
-import cairosvg
 from flask import Flask
 from dotenv import load_dotenv
 from colorthief import ColorThief
@@ -81,12 +80,7 @@ class AWSWrapper:
                 return None
 
             image_bytes = response['Body'].read()
-            
-            if s3_key.endswith('.svg'):
-                png_bytes = cairosvg.svg2png(bytestring=image_bytes)
-                image_stream = BytesIO(png_bytes)
-            else:
-                image_stream = BytesIO(image_bytes)
+            image_stream = BytesIO(image_bytes)
 
             color_thief = ColorThief(image_stream)
             dominant_color = color_thief.get_color(quality=1)

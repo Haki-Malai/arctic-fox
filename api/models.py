@@ -54,7 +54,7 @@ class User(Updateable, db.Model):
         :return: The new user.
         """
         try:
-            user = User(email=email)
+            user = User(email=email, role=role)
             db.session.add(user)
             db.session.commit()
             send_email(email, 'Invitation to Arctic Fox', 'invite', user_email=email)

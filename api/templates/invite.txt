@@ -1,0 +1,8 @@
+Hello, {{ user_email }}!
+
+You have been invited to join our platform. To accept the invitation and create your account please login with Google using this email
+
+If you did not expect this invitation, please ignore this email.
+
+Best regards,
+The Arctic Fox Team

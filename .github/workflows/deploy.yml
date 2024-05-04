@@ -1,0 +1,76 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - development
+      - main
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["PyTest"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: >
+      github.ref == 'refs/heads/development' ||
+      (github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event_name == 'workflow_run')))
+    steps:
+      - name: Add Sensitive Variables to .env
+        run: |
+          echo "FLASK_APP=arctic_fox" > .env
+          echo "FLASK_RUN_PORT=5000" >> .env
+          echo "DISABLE_AUTH=false" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}" >> .env
+          echo "MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }}" >> .env
+          echo "ERROR_EMAIL=${{ secrets.ERROR_EMAIL }}" >> .env
+          echo "MAIL_SERVER=${{ secrets.MAIL_SERVER }}" >> .env
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+          echo "MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}" >> .env
+          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_BUCKET=${{ secrets.AWS_BUCKET }}" >> .env
+          echo "ARCTIC_FOX_OWNER_EMAIL=${{ secrets.ARCTIC_FOX_OWNER_EMAIL }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}" >> .env
+          echo "OAUTHLIB_INSECURE_TRANSPORT=true" >> .env
+
+      - name: SSH and Deploy to EC2
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PROD_SERVER_SSH_KEY }}
+          EC2_HOST: ${{ secrets.DEV_EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
+
+          eval "$(ssh-agent -s)"
+
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add - || { echo "Failed to add SSH key to agent"; exit 1; }
+
+          mkdir -p ~/.ssh
+          touch ~/.ssh/known_hosts
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+          scp .env $EC2_USER@$EC2_HOST:~
+
+          ssh -tt $EC2_USER@$EC2_HOST << EOF
+            set -e
+            git checkout development && git pull
+            docker-compose up -d --build
+            exit
+          EOF

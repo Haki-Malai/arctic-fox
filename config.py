@@ -75,4 +75,5 @@ class Config:
     REDIS_DB = os.environ.get('REDIS_DB')
 
     # Celery options
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
+                                       CACHE_REDIS_URL)

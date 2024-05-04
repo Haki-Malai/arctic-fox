@@ -60,7 +60,7 @@ jobs:
 
           eval "$(ssh-agent -s)"
 
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add - || { echo "Failed to add SSH key to agent"; exit 1; }
+          echo "${{ secrets.SERVER_SSH_KEY }}" | tr -d '\r' | ssh-add - || { echo "Failed to add SSH key to agent"; exit 1; }
 
           mkdir -p ~/.ssh
           touch ~/.ssh/known_hosts

@@ -70,7 +70,8 @@ jobs:
 
           ssh -tt $EC2_USER@$EC2_HOST << EOF
             set -e
+            cd arctic-fox
             git checkout development && git pull
-            docker-compose up -d --build
+            docker compose up -d --build
             exit
           EOF

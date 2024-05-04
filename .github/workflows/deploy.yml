@@ -74,7 +74,7 @@ jobs:
             set -e
             echo "Inside EC2"
             cd arctic-fox
-            git checkout development && git pull
+            git checkout main && git pull
             echo "Starting Docker Compose..."
             docker compose up -d --build
             exit

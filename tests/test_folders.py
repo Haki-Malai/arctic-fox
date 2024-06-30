@@ -1,10 +1,19 @@
 from api.app import db
-from api.models import User, Folder
+from api.models import Folder
 from api.enums import Role
 from tests.base_test_case import BaseTestCase
 
 
 class FolderTests(BaseTestCase):
+
+    def create_folder(self):
+        """Initializes a folder and saves it to the database."""
+        folder = Folder(name='testfolder',
+                             description='This is a test folder',
+                             created_by=self.user.id)
+        db.session.add(folder)
+        db.session.commit()
+        return folder
 
     def test_new_folder(self):
         """Test creating a new folder."""
@@ -13,7 +22,6 @@ class FolderTests(BaseTestCase):
             'description': 'This is a test folder'
         }
         rv = self.client.post('/api/v1/folders', json=data)
-        print(rv.json)
         assert rv.status_code == 201
         assert 'name' in rv.json \
             and rv.json['name'] == 'testfolder'
@@ -26,23 +34,17 @@ class FolderTests(BaseTestCase):
 
     def test_edit_folder(self):
         """Test editing a folder."""
-        folder = Folder(name='testfolder',
-                        description='This is a test folder',
-                        created_by=self.user.id)
-        db.session.add(folder)
-        db.session.commit()
+        folder = self.create_folder()
 
         rv = self.client.put(f'/api/v1/folders/{folder.id}',
-                             json={'description': 'Updated test folder description'})
+                             json={'description': 'Updated folder description'})
         assert rv.status_code == 200
         assert 'description' in rv.json \
-            and rv.json['description'] == 'Updated test folder description'
+            and rv.json['description'] == 'Updated folder description'
 
     def test_delete_folder(self):
         """Test deleting a folder."""
-        folder = Folder(name='testfolder',
-                        description='This is a test folder',
-                        created_by=self.user.id)
+        folder = self.create_folder()
         db.session.add(folder)
         db.session.commit()
 
@@ -54,9 +56,7 @@ class FolderTests(BaseTestCase):
 
     def test_permissions(self):
         """Test folder permissions."""
-        folder = Folder(name='testfolder',
-                        description='This is a test folder',
-                        created_by=self.user.id)
+        folder = self.create_folder()
         db.session.add(folder)
         db.session.commit()
 

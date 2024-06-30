@@ -23,9 +23,11 @@ def post(data: dict) -> Optional[User]:
     """Invite a user to the system
     Create a new user
 
-    :roles: admin
+    :roles: admin, moderator
 
-    :param role: 'admin', 'moderator', or 'viewer'
+    :param data: The user data to create
+
+    :return: The new user
     """
     user = token_auth.current_user()
     new_user = user.invite(data.get('email'), data.get('role')) \
@@ -41,7 +43,10 @@ def delete(id: int) -> dict:
     """Delete a user
 
     :roles: admin
+
     :param id: The id of the user to delete
+
+    :return: Empty response
     """
     user = db.session.get(User, id) or abort(404)
     db.session.delete(user)
@@ -55,7 +60,14 @@ def delete(id: int) -> dict:
 @authenticate(token_auth, role=[Role.ADMIN.name])
 @other_responses({404: 'User not found'})
 def put(data: dict, id: int) -> Optional[User]:
-    """Edit a user"""
+    """Edit a user
+    :roles: admin
+
+    :param data: The user data to update
+    :param id: The id of the user to edit
+
+    :return: The updated user
+    """
     user = db.session.get(User, id) or abort(404)
     user.update(data)
     db.session.commit()
@@ -68,7 +80,8 @@ def put(data: dict, id: int) -> Optional[User]:
 def all() -> List[User]:
     """Retrieve all users
 
-    Roles required: owner, admin"""
+    :return: All users
+    """
     return db.session.scalars(User.select())
 
 
@@ -77,7 +90,12 @@ def all() -> List[User]:
 @response(user_schema)
 @other_responses({404: 'User not found'})
 def get(id: int) -> Optional[User]:
-    """Retrieve a user by id"""
+    """Retrieve a user by id
+
+    :param id: The id of the user to retrieve
+
+    :return: The user
+    """
     return db.session.get(User, id) or abort(404)
 
 
@@ -85,5 +103,8 @@ def get(id: int) -> Optional[User]:
 @authenticate(token_auth)
 @response(user_schema)
 def me() -> User:
-    """Retrieve the authenticated user"""
+    """Retrieve the authenticated user
+
+    :return: The authenticated user
+    """
     return token_auth.current_user()

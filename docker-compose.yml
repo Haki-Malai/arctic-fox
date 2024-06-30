@@ -11,6 +11,17 @@ services:
       - redis
     volumes:
       - ./logs:/var/log/gunicorn
+  
+  celery:
+    build: .
+    image: celery
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/var/log/celery
+    command: celery -A arcticfox worker -l info
 
   postgres:
     image: postgres:10.17

@@ -26,7 +26,7 @@ class Config:
     DB_NAME = os.environ.get('DB_NAME')
 
     ALCHEMICAL_DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    ALCHEMICAL_ENGINE_OPTIONS = {'echo': as_bool(os.environ.get('SQL_ECHO'))}
+    ALCHEMICAL_ENGINE_OPTIONS = {'echo': as_bool(os.environ.get('SQL_ECHO', ''))}
 
     # Cache options
     CACHE_TYPE = os.environ.get('CACHE_TYPE', 'redis')
@@ -43,8 +43,8 @@ class Config:
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
     # Security options
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')
-    DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
+    SECRET_KEY = 'top-secret-key'
+    DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH', ''))
     ACCESS_TOKEN_MINUTES = int(os.environ.get('ACCESS_TOKEN_MINUTES') or '15')
     REFRESH_TOKEN_DAYS = int(os.environ.get('REFRESH_TOKEN_DAYS') or '7')
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
@@ -60,7 +60,7 @@ class Config:
     # Email options
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'localhost')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or '25')
-    MAIL_USE_TLS = as_bool(os.environ.get('MAIL_USE_TLS'))
+    MAIL_USE_TLS = as_bool(os.environ.get('MAIL_USE_TLS', ''))
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')

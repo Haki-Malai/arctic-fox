@@ -51,7 +51,7 @@ def delete(id: int) -> dict:
     user = db.session.get(User, id) or abort(404)
     db.session.delete(user)
     db.session.commit()
-    return
+    return {}
 
 
 @bp.route('/users/<int:id>', methods=['PUT'])

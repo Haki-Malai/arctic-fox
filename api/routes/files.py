@@ -7,8 +7,6 @@ from api.schemas import FileSchema, EmptySchema, PresignedPostSchema
 from api.auth import token_auth
 from api.enums import Role
 
-from typing import List
-
 bp = Blueprint('file', __name__)
 file_schema = FileSchema()
 files_schema = FileSchema(many=True)
@@ -37,7 +35,7 @@ def get(id: int) -> File:
 @bp.route('/files', methods=['GET'])
 @authenticate(token_auth)
 @response(files_schema)
-def all() -> List[File]:
+def all() -> list[File]:
     """Retrieve all files"""
     return db.session.scalars(File.select()).all()
 
@@ -45,7 +43,7 @@ def all() -> List[File]:
 @bp.route('/videos', methods=['GET'])
 @authenticate(token_auth)
 @response(files_schema)
-def videos() -> List[File]:
+def videos() -> list[File]:
     """Retrieve all videos"""
     return db.session.scalars(
         File.select().where(File.mimetype == 'video/mp4')).all()
@@ -54,7 +52,7 @@ def videos() -> List[File]:
 @bp.route('/images', methods=['GET'])
 @authenticate(token_auth)
 @response(files_schema)
-def images() -> List[File]:
+def images() -> list[File]:
     """Retrieve all images"""
     return db.session.scalars(File.select().where(
         File.mimetype.in_(['image/jpeg', 'image/png', 'image/gif']))).all()
@@ -81,7 +79,7 @@ def post(data: dict) -> File:
 @other_responses({404: 'File not found'})
 def put(data, id) -> File:
     """Edit a file"""
-    file = db.session.get(file, id) or abort(404)
+    file = db.session.get(File, id) or abort(404)
     file.update(data)
     db.session.commit()
     return file

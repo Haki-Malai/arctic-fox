@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from colorthief import ColorThief
 from io import BytesIO
 
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 
 class AWSWrapper:
@@ -58,7 +58,7 @@ class AWSWrapper:
         files = []
         if 'Contents' in response:
             files = [content['Key'] for content in response['Contents']]
-            return files
+        return files
 
     def upload_file_to_s3(self, file_path: str, s3_key: str) -> None:
         """Upload a file to S3.
@@ -68,7 +68,7 @@ class AWSWrapper:
         with open(file_path, 'rb') as f:
             self.s3_client.upload_fileobj(f, self.aws_bucket, s3_key)
 
-    def generate_dominant_color(self, s3_key: str) -> Optional[str]:
+    def generate_dominant_color(self, s3_key: str) -> str|None:
         """Generate the dominant color of an image stored in S3. Supports both raster images and SVGs.
 
         :param s3_key: The S3 key (filename) where the image is stored.
@@ -97,7 +97,7 @@ class AWSWrapper:
         """
         self.s3_client.delete_object(Bucket=self.aws_bucket, Key=s3_key)
 
-    def generate_presigned_url(self, s3_key: str, expiration: int=3600) -> Optional[str]:
+    def generate_presigned_url(self, s3_key: str, expiration: int=3600) -> dict[Any, Any]:
         """Generate a presigned URL to share an S3 object.
 
         :param s3_key: The name of the object to share.
@@ -110,7 +110,7 @@ class AWSWrapper:
             ExpiresIn=expiration
         )
 
-    def get_s3_object(self, s3_key: str) -> Optional[Dict]:
+    def get_s3_object(self, s3_key: str) -> dict|None:
         """Fetch an object from S3 using the bucket and key.
 
         :param s3_key: The S3 key (filename) where the file is stored.
@@ -119,14 +119,14 @@ class AWSWrapper:
         return self.s3_client.get_object(Bucket=self.aws_bucket, Key=s3_key)
 
     def generate_image_labels(self, s3_key: str, max_labels: int=10,
-                              min_confidence: float=75.0) -> Optional[List]:
+                              min_confidence: float=75.0) -> list|None:
         """Generate labels for an image stored in S3 using Amazon Rekognition.
 
         :param s3_key: The S3 key (filename) where the image is stored.
         :param max_labels: Maximum number of labels to return.
         :param min_confidence: Minimum confidence level for returned labels.
 
-        :return: List of label data if successful, otherwise None.
+        :return: list of label data if successful, otherwise None.
         """
         if not hasattr(self, 'rekognition_client'):
             self._init_rekognition_client()
@@ -144,8 +144,8 @@ class AWSWrapper:
 
         return response.get('Labels', [])
 
-    def generate_presigned_post(self, filename: str, fields=None, conditions=None, folder: str=None,
-                                expiration=3600) -> Optional[Dict[str, Any]]:
+    def generate_presigned_post(self, filename: str, fields=None, conditions=None,
+                                folder: str='', expiration=3600) -> dict[str, Any]|None:
         """Generate a presigned URL S3 POST request to upload a file.
 
         :param folder: Folder in the S3 bucket where the file will be uploaded.
@@ -163,7 +163,7 @@ class AWSWrapper:
             ExpiresIn=expiration)
 
         return presigned_post
-    
+
     def clean_s3_bucket(self) -> None:
         """Delete all items (objects) from the S3 bucket."""
         files = self.list_uploaded_files()
@@ -188,4 +188,4 @@ if __name__ == '__main__':
     aws = AWSWrapper()
     aws.init_app(app)
 
-    print(aws.clean_s3_bucket())
+    aws.clean_s3_bucket()

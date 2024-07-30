@@ -1,0 +1,49 @@
+name: PyTest
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Start Selenium Chrome
+      run: |
+        docker-compose up -d selenium-chrome
+
+    - name: Create .env and set environment variables
+      run: |
+        echo "FLASK_APP=arctic_fox" >> .env
+        echo "USE_LOCALHOST=true" >> .env
+
+    - name: Set sensitive environment variables from secrets
+      run: |
+        echo "DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/arcticfox" >> .env
+
+        echo "ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}" >> .env
+        echo "MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }}" >> .env
+        echo "ERROR_EMAIL=${{ secrets.ERROR_EMAIL }}" >> .env
+        echo "MAIL_SERVER=${{ secrets.MAIL_SERVER }}" >> .env
+        echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+        echo "MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}" >> .env
+        echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
+        echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+
+    - name: Run tests
+      run: |
+        pytest

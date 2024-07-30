@@ -5,7 +5,7 @@ from api import ma, aws_wrapper
 from api.models import User, Folder, File
 from api.enums import Role
 
-paginated_schema_cache = {}
+paginated_schema_cache: dict = {}
 
 
 class EmptySchema(ma.Schema):
@@ -18,7 +18,8 @@ class UserSchema(ma.SQLAlchemySchema):
         ordered = True
 
     id = ma.auto_field(dump_only=True)
-    email = ma.auto_field(required=True, dump_only=True)
+    email = ma.auto_field(required=True, dump_only=True,
+                          validate=validate.Email(error='Invalid email format.'))
     username = ma.auto_field(dump_only=True)
     avatar_url = ma.auto_field(dump_only=True)
     activated = ma.auto_field(dump_only=True)

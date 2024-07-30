@@ -45,7 +45,7 @@ class User(Updateable, db.Model):
         self.avatar_url = idinfo['picture']
         self.activated = True
 
-    def invite(self, email: str, role: str) -> 'User':
+    def invite(self, email: str, role: str) -> 'User'|None:
         """Invite a user and create a new user.
 
         :param email: The email of the user to invite and create.
@@ -63,14 +63,13 @@ class User(Updateable, db.Model):
             db.session.rollback()
             return
 
-    def generate_auth_token(self) -> None:
+    def generate_auth_token(self) -> Token:
         """Generate a new access and refresh token."""
-        token = Token(self.id)
-        return token
+        return Token(self.id)
 
     @staticmethod
     def verify_access_token(access_token_jwt: str,
-                            refresh_token: str = None) -> Optional['User']:
+                            refresh_token: str = None) -> 'User'|None:
         """Return the user associated with the access token JWT.
 
         :param access_token_jwt: The access token JWT.
@@ -83,11 +82,11 @@ class User(Updateable, db.Model):
             user = db.session.get(User, token.user_id)
             if user:
                 db.session.commit()
-                return user
+            return user
 
     @staticmethod
     def verify_refresh_token(refresh_token: str,
-                             access_token_jwt: str) -> Optional[Token]:
+                             access_token_jwt: str) -> Token|None:
         """Return the token associated with the refresh token.
 
         :param access_token_jwt: The access token JWT.

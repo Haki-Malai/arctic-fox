@@ -4,7 +4,7 @@ import jwt
 import secrets
 
 from api.app import cache
-from config import Config
+from config import config
 
 
 class Token:
@@ -17,10 +17,10 @@ class Token:
         self.user_id = user_id
         self.access_token = secrets.token_urlsafe()
         self.access_expiration = datetime.utcnow() + timedelta(
-            minutes=Config.ACCESS_TOKEN_MINUTES)
+            minutes=config.ACCESS_TOKEN_MINUTES)
         self.refresh_token = secrets.token_urlsafe()
         self.refresh_expiration = datetime.utcnow() + timedelta(
-            days=Config.REFRESH_TOKEN_DAYS)
+            days=config.REFRESH_TOKEN_DAYS)
         self.save()
 
     @property
@@ -30,13 +30,13 @@ class Token:
         return: The access token as a JWT
         """
         return jwt.encode(
-            {'token': self.access_token}, Config.SECRET_KEY, algorithm='HS256')
+            {'token': self.access_token}, config.SECRET_KEY, algorithm='HS256')
 
     def save(self) -> None:
         """Save the token to Redis and register it."""
         token_data = pickle.dumps(self)
         cache.set(f'token:{self.access_token}', token_data,
-                  timeout=Config.REFRESH_TOKEN_DAYS * 24 * 3600)
+                  timeout=config.REFRESH_TOKEN_DAYS * 24 * 3600)
         current_registry = cache.get('token_registry') or []
         current_registry.append(f'token:{self.access_token}')
         cache.set('token_registry', current_registry)
@@ -60,7 +60,7 @@ class Token:
 
         :raises ValueError: If the token is invalid or expired
         """
-        decoded = jwt.decode(access_token_jwt, Config.SECRET_KEY, algorithms=['HS256'])
+        decoded = jwt.decode(access_token_jwt, config.SECRET_KEY, algorithms=['HS256'])
         access_token = decoded.get('token')
 
         serialized_token = cache.get(f"token:{access_token}")

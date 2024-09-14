@@ -2,7 +2,7 @@ import enum
 
 
 class Role(enum.Enum):
-    ADMIN = 1
-    MODERATOR = 2
-    VIEWER = 3
+    ADMIN: int = 1
+    MODERATOR: int = 2
+    VIEWER: int = 3
 

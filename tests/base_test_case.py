@@ -2,10 +2,10 @@ import unittest
 
 from api.app import create_app, db
 from api.models import User
-from config import Config
+from config import config
 
 
-class TestConfig(Config):
+class TestConfig(config):
     SERVER_NAME = 'localhost:5000'
     TESTING = True
     DISABLE_AUTH = True

@@ -10,14 +10,14 @@ from google.auth.transport import requests
 from api.app import db
 from api.models import User
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 google_auth = HTTPTokenAuth(scheme='Bearer')
 token_auth = HTTPTokenAuth(scheme='Bearer')
 
 
 @google_auth.verify_token
-def verify_google_token(credential:str) -> Optional[User]:
+def verify_google_token(credential:str) -> User|None:
     """Exchange OAuth2 credential code for access token and verify it.
 
     :param credential: The OAuth2 credential value.
@@ -42,7 +42,7 @@ def verify_google_token(credential:str) -> Optional[User]:
 
 
 @token_auth.verify_token
-def verify_token(access_token: str) -> Optional[User]:
+def verify_token(access_token: str) -> User|None:
     """Verify the access token.
 
     :param access_token: The access token.
@@ -70,7 +70,7 @@ def get_user_roles(user: User) -> str:
 
 
 @token_auth.error_handler
-def token_auth_error(status: int=401) -> Tuple:
+def token_auth_error(status: int=401) -> tuple[dict[int, str, str], int]:
     """Return the error response for the token auth error.
 
     :param status: The status code.

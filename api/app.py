@@ -10,10 +10,10 @@ from celery import Celery
 import redis
 import logging
 
-from config import Config
+from config import Config, config
 from utils.aws_wrapper import AWSWrapper
 
-from typing import Type, Dict, Any
+from typing import Any
 
 db = Alchemical()
 migrate = Migrate()
@@ -23,12 +23,13 @@ mail = Mail()
 apifairy = APIFairy()
 cache = Cache()
 aws_wrapper = AWSWrapper()
-celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+celery = Celery(__name__, broker=config.REDIS_URL)
 rd = redis.StrictRedis(
-    host=Config.REDIS_HOST, port=Config.REDIS_PORT, db=Config.REDIS_DB)
+    host=config.REDIS_URL.host, port=config.REDIS_URL.port,
+    db=0, decode_responses=True)
 
 
-def create_app(config_class: Type[Config] = Config) -> Flask:
+def create_app(config_class: Config = config) -> Flask:
     """Create and configure an instance of the Flask application.
 
     :param config_class: The configuration class to use.
@@ -39,7 +40,6 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     app.config.from_object(config_class)
     app.json.sort_keys = False
 
-    # Extensions
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
@@ -50,7 +50,6 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     aws_wrapper.init_app(app)
     celery.conf.update(app.config)
 
-    # Blueprints routes
     from api.routes.health import bp as health_bp
     app.register_blueprint(health_bp)
     from api.routes.errors import bp as errors_bp
@@ -64,7 +63,6 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
     from api.routes.files import bp as files_bp
     app.register_blueprint(files_bp, url_prefix='/api/v1')
 
-    # CLI commands
     from cli.fake import fake
     app.register_blueprint(fake)
     from cli.drop import bp as drop_bp
@@ -92,7 +90,7 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
         return spec
 
     @app.shell_context_processor
-    def shell_context() -> Dict[str, Any]:
+    def shell_context() -> dict[str, Any]:
         """Defines the shell context.
 
         :returns: The shell context.

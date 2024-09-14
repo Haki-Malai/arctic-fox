@@ -11,6 +11,8 @@ from api.email import send_email
 from api.token import Token
 from api.enums import Role
 
+from typing import Optional
+
 
 class Updateable:
     def update(self, data: dict) -> None:
@@ -45,7 +47,7 @@ class User(Updateable, db.Model):
         self.avatar_url = idinfo['picture']
         self.activated = True
 
-    def invite(self, email: str, role: str) -> 'User'|None:
+    def invite(self, email: str, role: str) -> Optional['User']:
         """Invite a user and create a new user.
 
         :param email: The email of the user to invite and create.
@@ -69,7 +71,7 @@ class User(Updateable, db.Model):
 
     @staticmethod
     def verify_access_token(access_token_jwt: str,
-                            refresh_token: str = None) -> 'User'|None:
+                            refresh_token: str = None) -> Optional['User']:
         """Return the user associated with the access token JWT.
 
         :param access_token_jwt: The access token JWT.

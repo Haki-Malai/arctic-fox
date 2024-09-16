@@ -11,7 +11,7 @@ services:
       - redis
     volumes:
       - ./logs:/var/log/gunicorn
-  
+
   celery:
     build: .
     image: celery

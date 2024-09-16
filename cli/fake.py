@@ -1,9 +1,10 @@
 import random
 import click
-from datetime import datetime, timedelta
 from flask import Blueprint
 from faker import Faker
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timedelta
+
 from api.app import db
 from api.models import User, Folder, File
 from api.enums import Role
@@ -13,7 +14,10 @@ faker = Faker()
 
 
 def random_datetime_this_year() -> datetime:
-    """Generate a random datetime within the current year."""
+    """Generate a random datetime within the current year.
+    
+    :returns: The random datetime.
+    """
     year_start = datetime(datetime.now().year, 1, 1)
     year_end = datetime(datetime.now().year, 12, 31, 23, 59, 59)
 

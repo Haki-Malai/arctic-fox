@@ -1,7 +1,7 @@
 import unittest
 
 from api.app import create_app, db
-from api.models import User
+from database.models import User
 from config import config
 
 

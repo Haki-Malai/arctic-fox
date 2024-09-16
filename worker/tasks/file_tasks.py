@@ -1,6 +1,6 @@
 from worker import celery
 from api.app import db, aws_wrapper
-from api.models import File
+from database.models import File
 import logging
 
 logging.basicConfig(level=logging.INFO)

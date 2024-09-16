@@ -6,11 +6,10 @@ from datetime import datetime
 from api.app import db
 from api.email import send_email
 from api.token import Token
-from database.models.enums import Role
-from ..mixins.timestamp import TimestampMixin, UpdateableMixin
+from ..enums import Role
+from ..mixins import TimestampMixin, UpdateableMixin
 
 from typing import Optional
-
 
 
 class User(TimestampMixin, UpdateableMixin, db.Model):

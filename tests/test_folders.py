@@ -1,6 +1,6 @@
 from api.app import db
-from api.models import Folder
-from api.enums import Role
+from database.models import Folder
+from database.enums import Role
 from tests.base_test_case import BaseTestCase
 
 

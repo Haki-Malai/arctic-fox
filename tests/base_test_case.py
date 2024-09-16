@@ -2,7 +2,7 @@ import unittest
 
 from api.app import create_app, db
 from database.models import User
-from .config import test_config
+from .test_config import test_config
 
 
 class BaseTestCase(unittest.TestCase):

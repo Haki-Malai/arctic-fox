@@ -23,7 +23,7 @@ mail = Mail()
 apifairy = APIFairy()
 cache = Cache()
 aws_wrapper = AWSWrapper()
-celery = Celery(__name__, broker=config.REDIS_URL)
+celery = Celery(__name__, broker=str(config.REDIS_URL))
 rd = redis.StrictRedis(
     host=config.REDIS_URL.host, port=config.REDIS_URL.port,
     db=0, decode_responses=True)

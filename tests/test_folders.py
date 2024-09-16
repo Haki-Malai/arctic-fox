@@ -1,4 +1,4 @@
-from api.app import db
+from api import db
 from database.models import Folder
 from database.enums import Role
 from tests.base_test_case import BaseTestCase

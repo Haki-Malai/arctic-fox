@@ -1,5 +1,5 @@
 from worker import celery
-from api.app import db, aws_wrapper
+from api import db, aws_wrapper
 from database.models import File
 import logging
 

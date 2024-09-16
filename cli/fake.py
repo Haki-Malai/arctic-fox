@@ -5,7 +5,7 @@ from faker import Faker
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 
-from api.app import db
+from api import db
 from database.models import User, Folder, File
 from database.enums import Role
 

@@ -3,7 +3,7 @@ import psycopg2
 from flask import Blueprint
 from sqlalchemy import inspect
 
-from api.app import db
+from api import db
 from config import config
 
 bp = Blueprint('database', __name__)

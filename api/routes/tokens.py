@@ -2,11 +2,11 @@ from flask import Blueprint, request, abort, current_app, url_for
 from werkzeug.http import dump_cookie
 from apifairy import authenticate, body, response, other_responses
 
-from api.app import db
+from api import db
 from api.auth import google_auth, token_auth
-from database.models import User
 from api.token import Token
 from api.schemas import TokenSchema, EmptySchema, OAuth2Schema
+from database.models import User
 
 from typing import Dict
 

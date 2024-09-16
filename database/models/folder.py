@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
-from api.app import db
+from api import db
 from ..mixins import TimestampMixin, UpdateableMixin
 
 from typing import Optional

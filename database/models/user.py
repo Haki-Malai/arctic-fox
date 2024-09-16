@@ -3,7 +3,7 @@ import sqlalchemy.orm as so
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 
-from api.app import db
+from api import db
 from api.email import send_email
 from api.token import Token
 from ..enums import Role

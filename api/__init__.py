@@ -1,1 +1,1 @@
-from api.app import create_app, db, ma, aws_wrapper, celery
+from .app import create_app, db, ma, aws_wrapper, celery

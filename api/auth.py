@@ -10,8 +10,6 @@ from google.auth.transport import requests
 from api.app import db
 from api.models import User
 
-from typing import Tuple
-
 google_auth = HTTPTokenAuth(scheme='Bearer')
 token_auth = HTTPTokenAuth(scheme='Bearer')
 

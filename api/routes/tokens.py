@@ -4,7 +4,7 @@ from apifairy import authenticate, body, response, other_responses
 
 from api.app import db
 from api.auth import google_auth, token_auth
-from api.models import User
+from database.models import User
 from api.token import Token
 from api.schemas import TokenSchema, EmptySchema, OAuth2Schema
 

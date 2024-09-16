@@ -2,7 +2,8 @@ from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 
 from api import db
-from api.models import Role, Folder
+from database.models import Folder
+from database.enums import Role
 from api.schemas import FolderSchema, EmptySchema
 from api.auth import token_auth
 

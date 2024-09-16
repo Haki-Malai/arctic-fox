@@ -2,8 +2,8 @@ from marshmallow import validate
 from marshmallow_enum import EnumField
 
 from api import ma, aws_wrapper
-from api.models import User, Folder, File
-from api.enums import Role
+from database.models import User, Folder, File
+from database.enums import Role
 
 paginated_schema_cache: dict = {}
 

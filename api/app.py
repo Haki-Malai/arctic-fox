@@ -69,6 +69,8 @@ def create_app(config_class: Config = config) -> Flask:
     app.register_blueprint(drop_bp)
     from cli.create import bp as create_bp
     app.register_blueprint(create_bp)
+    from cli.database import bp as database_bp
+    app.register_blueprint(database_bp)
 
     @apifairy.process_apispec
     def apispec_processor(spec:dict) -> dict:
@@ -95,7 +97,7 @@ def create_app(config_class: Config = config) -> Flask:
 
         :returns: The shell context.
         """
-        import api.models as models
+        import database.models as models
 
         ctx = {'db': db}
         for attr in dir(models):

@@ -2,10 +2,10 @@ from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 
 from api import db, aws_wrapper
-from api.models import File
+from database.models import File
 from api.schemas import FileSchema, EmptySchema, PresignedPostSchema
 from api.auth import token_auth
-from api.enums import Role
+from database.enums import Role
 
 bp = Blueprint('file', __name__)
 file_schema = FileSchema()
@@ -39,6 +39,35 @@ def all() -> list[File]:
     """Retrieve all files"""
     return db.session.scalars(File.select()).all()
 
+from sqlalchemy import Column, DateTime, func
+from sqlalchemy.ext.declarative import declared_attr
+
+
+class TimestampMixin:
+    @declared_attr
+    def created_at(cls: type) -> Column:
+        """Return a created_at column.
+
+        :param cls: The class to create the column for.
+
+        :return: The created_at column.
+        """
+        return Column(DateTime, default=func.now(), nullable=False)
+
+    @declared_attr
+    def updated_at(cls: type) -> Column:
+        """Return an updated_at column.
+
+        :param cls: The class to create the column for.
+
+        :return: The updated_at column.
+        """
+        return Column(
+            DateTime,
+            default=func.now(),
+            onupdate=func.now(),
+            nullable=False,
+        )
 
 @bp.route('/videos', methods=['GET'])
 @authenticate(token_auth)

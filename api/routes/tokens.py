@@ -5,7 +5,7 @@ from apifairy import authenticate, body, response, other_responses
 from api import db
 from api.auth import google_auth, token_auth
 from api.token import Token
-from api.schemas import TokenSchema, EmptySchema, OAuth2Schema
+from .schemas import TokenSchema, EmptySchema, OAuth2Schema
 from database.models import User
 
 from typing import Dict

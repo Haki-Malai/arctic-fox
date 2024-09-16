@@ -4,7 +4,7 @@ from apifairy import authenticate, body, response, other_responses
 from api import db
 from database.models import Folder
 from database.enums import Role
-from api.schemas import FolderSchema, EmptySchema
+from .schemas import FolderSchema, EmptySchema
 from api.auth import token_auth
 
 from typing import List, Dict, Any

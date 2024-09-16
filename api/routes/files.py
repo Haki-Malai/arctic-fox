@@ -2,9 +2,9 @@ from flask import Blueprint, abort
 from apifairy import authenticate, body, response, other_responses
 
 from api import db, aws_wrapper
-from database.models import File
-from api.schemas import FileSchema, EmptySchema, PresignedPostSchema
 from api.auth import token_auth
+from .schemas import FileSchema, EmptySchema, PresignedPostSchema
+from database.models import File
 from database.enums import Role
 
 bp = Blueprint('file', __name__)

@@ -8,7 +8,13 @@ bp = Blueprint('errors', __name__)
 
 
 @bp.app_errorhandler(HTTPException)
-def http_error(error):
+def http_error(error: HTTPException) -> tuple:
+    """Handle HTTP errors
+
+    :param error: The HTTP error
+
+    :return: The response tuple
+    """
     return {
         'code': error.code,
         'message': error.name,
@@ -17,7 +23,13 @@ def http_error(error):
 
 
 @bp.app_errorhandler(IntegrityError)
-def sqlalchemy_integrity_error(error):
+def sqlalchemy_integrity_error(error: IntegrityError) -> tuple:
+    """Handle SQLAlchemy integrity errors
+
+    :param error: The SQLAlchemy integrity error
+
+    :return: The response tuple
+    """
     return {
         'code': 400,
         'message': 'Database integrity error',
@@ -26,7 +38,13 @@ def sqlalchemy_integrity_error(error):
 
 
 @bp.app_errorhandler(SQLAlchemyError)
-def sqlalchemy_error(error):
+def sqlalchemy_error(error: SQLAlchemyError) -> tuple:
+    """Handle SQLAlchemy errors
+
+    :param error: The SQLAlchemy error
+
+    :return: The response tuple
+    """
     if current_app.config['DEBUG'] is True:
         return {
             'code': InternalServerError.code,
@@ -42,7 +60,14 @@ def sqlalchemy_error(error):
 
 
 @apifairy.error_handler
-def validation_error(code, messages):
+def validation_error(code: int, messages: dict) -> tuple:
+    """Handle validation errors
+
+    :param code: The status code
+    :param messages: The validation error messages
+
+    :return: The response tuple
+    """
     return {
         'code': code,
         'message': 'Validation Error',

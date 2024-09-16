@@ -65,10 +65,6 @@ def create_app(config_class: Config = config) -> Flask:
 
     from cli.fake import fake
     app.register_blueprint(fake)
-    from cli.drop import bp as drop_bp
-    app.register_blueprint(drop_bp)
-    from cli.create import bp as create_bp
-    app.register_blueprint(create_bp)
     from cli.database import bp as database_bp
     app.register_blueprint(database_bp)
 

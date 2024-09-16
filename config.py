@@ -4,8 +4,8 @@ from pydantic import PostgresDsn, RedisDsn
 
 class Config(BaseSettings):
     ALCHEMICAL_ECHO: bool = False
-    ALCHEMICAL_DATABASE_URL_DSN: PostgresDsn = 'postgresql://u:p@localhost/db'
-    ALCHEMICAL_DATABASE_URL: str = str(ALCHEMICAL_DATABASE_URL_DSN)
+    POSTGRES_URI: PostgresDsn = 'postgresql://username:password@localhost/db'
+    ALCHEMICAL_DATABASE_URL: str = str(POSTGRES_URI)
 
     SECRET_KEY: str = 'secret'
     DISABLE_AUTH: bool = False

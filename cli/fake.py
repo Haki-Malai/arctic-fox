@@ -6,8 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 
 from api.app import db
-from api.models import User, Folder, File
-from api.enums import Role
+from database.models import User, Folder, File
+from database.enums import Role
 
 fake = Blueprint('fake', __name__)
 faker = Faker()

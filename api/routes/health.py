@@ -5,6 +5,7 @@ from .schemas import EmptySchema
 
 bp = Blueprint('health', __name__)
 
+
 @bp.route('/health')
 @response(EmptySchema, 200)
 def health_check():

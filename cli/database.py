@@ -5,6 +5,8 @@ from sqlalchemy import inspect
 
 from api import db
 from config import config
+from database.models import User
+from database.enums import Role
 
 bp = Blueprint('database', __name__)
 
@@ -13,6 +15,11 @@ bp = Blueprint('database', __name__)
 def init():
     """Initialize the database."""
     db.create_all()
+
+    # Create the admin user
+    admin = User(email=config.ADMIN_EMAIL, role=Role.ADMIN)
+    db.session.add(admin)
+    db.session.commit()
 
 
 @bp.cli.command()

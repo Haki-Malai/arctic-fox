@@ -9,8 +9,8 @@ class FolderTests(BaseTestCase):
     def create_folder(self):
         """Initializes a folder and saves it to the database."""
         folder = Folder(name='testfolder',
-                             description='This is a test folder',
-                             created_by=self.user.id)
+                        description='This is a test folder',
+                        created_by=self.user.id)
         db.session.add(folder)
         db.session.commit()
         return folder
@@ -21,13 +21,13 @@ class FolderTests(BaseTestCase):
             'name': 'testfolder',
             'description': 'This is a test folder'
         }
-        rv = self.client.post('/api/v1/folders', json=data)
+        rv = self.client.post('/api/v1/folders', json=data, headers=self.headers)
         assert rv.status_code == 201
         assert 'name' in rv.json \
             and rv.json['name'] == 'testfolder'
         folder_id = rv.json['id']
 
-        rv = self.client.get(f'/api/v1/folders/{folder_id}')
+        rv = self.client.get(f'/api/v1/folders/{folder_id}', headers=self.headers)
         assert rv.status_code == 200
         assert 'description' in rv.json \
             and rv.json['description'] == 'This is a test folder'
@@ -37,7 +37,8 @@ class FolderTests(BaseTestCase):
         folder = self.create_folder()
 
         rv = self.client.put(f'/api/v1/folders/{folder.id}',
-                             json={'description': 'Updated folder description'})
+                             json={'description': 'Updated folder description'},
+                             headers=self.headers)
         assert rv.status_code == 200
         assert 'description' in rv.json \
             and rv.json['description'] == 'Updated folder description'
@@ -48,10 +49,10 @@ class FolderTests(BaseTestCase):
         db.session.add(folder)
         db.session.commit()
 
-        rv = self.client.delete(f'/api/v1/folders/{folder.id}')
+        rv = self.client.delete(f'/api/v1/folders/{folder.id}', headers=self.headers)
         assert rv.status_code == 204
 
-        rv = self.client.get(f'/api/v1/folders/{folder.id}')
+        rv = self.client.get(f'/api/v1/folders/{folder.id}', headers=self.headers)
         assert rv.status_code == 404
 
     def test_permissions(self):
@@ -60,12 +61,9 @@ class FolderTests(BaseTestCase):
         db.session.add(folder)
         db.session.commit()
 
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-
         rv = self.client.put(f'/api/v1/folders/{folder.id}',
                              json={'description': 'Authorized edit attempt'},
-                             headers=headers)
+                             headers=self.headers)
         assert rv.status_code == 200, 'Expected successful edit for admin role'
 
         self.user.role = Role.VIEWER
@@ -73,11 +71,10 @@ class FolderTests(BaseTestCase):
 
         rv = self.client.put(f'/api/v1/folders/{folder.id}',
                              json={'description': 'Unauthorized edit attempt'},
-                             headers=headers)
+                             headers=self.headers)
         assert rv.status_code == 403, 'Expected forbidden status for unauthorized edit'
 
-
-        rv = self.client.get(f'/api/v1/folders/{folder.id}', headers=headers)
+        rv = self.client.get(f'/api/v1/folders/{folder.id}', headers=self.headers)
         assert rv.status_code == 200 \
             and rv.json['description'] == 'Authorized edit attempt', \
                 'Edit should be visible'

@@ -14,10 +14,12 @@ class BaseTestCase(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-        self.user = User(
-            username='test', role='ADMIN', email='test@testing.com')
+        self.user = User(username='test', role='ADMIN', email='test@test.com')
         db.session.add(self.user)
         db.session.commit()
+
+        access_token = self.user.generate_auth_token().access_token_jwt
+        self.headers = {'Authorization': f'Bearer {access_token}'}
         self.client = self.app.test_client()
 
     def tearDown(self):

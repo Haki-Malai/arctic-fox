@@ -19,9 +19,7 @@ class UserTests(BaseTestCase):
             'email': 'newuser@example.com',
             'role': Role.VIEWER.name
         }
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.post('/api/v1/users', json=data, headers=headers)
+        rv = self.client.post('/api/v1/users', json=data, headers=self.headers)
         assert rv.status_code == 201
         assert 'email' in rv.json and rv.json['email'] == 'newuser@example.com'
 
@@ -32,55 +30,45 @@ class UserTests(BaseTestCase):
             'email': 'existing@example.com',
             'role': Role.VIEWER.name
         }
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.post('/api/v1/users', json=data, headers=headers)
+        rv = self.client.post('/api/v1/users', json=data, headers=self.headers)
         assert rv.status_code == 400
         assert 'Bad Request' in rv.json['message']
 
     def test_delete_user(self):
         """Test deleting a user."""
         user = self.create_user()
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.delete(f'/api/v1/users/{user.id}', headers=headers)
+        rv = self.client.delete(f'/api/v1/users/{user.id}', headers=self.headers)
         assert rv.status_code == 204
 
-        rv = self.client.get(f'/api/v1/users/{user.id}', headers=headers)
+        rv = self.client.get(f'/api/v1/users/{user.id}', headers=self.headers)
         assert rv.status_code == 404
 
     def test_edit_user(self):
         """Test editing a user."""
         user = self.create_user()
         data = {'role': Role.ADMIN.name}
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.put(f'/api/v1/users/{user.id}', json=data, headers=headers)
+        rv = self.client.put(f'/api/v1/users/{user.id}', json=data, headers=self.headers)
         assert rv.status_code == 200
         assert 'role' in rv.json and rv.json['role'] == Role.ADMIN.name
 
     def test_get_all_users(self):
         """Test retrieving all users."""
         self.create_user()
-        access_token = self.user.generate_auth_token()
+        access_token = self.user.generate_auth_token().access_token_jwt
         headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.get('/api/v1/users', headers=headers)
+        rv = self.client.get('/api/v1/users', headers=self.headers)
         assert rv.status_code == 200
         assert isinstance(rv.json, list)
 
     def test_get_user_by_id(self):
         """Test retrieving a user by id."""
         user = self.create_user()
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.get(f'/api/v1/users/{user.id}', headers=headers)
+        rv = self.client.get(f'/api/v1/users/{user.id}', headers=self.headers)
         assert rv.status_code == 200
         assert 'email' in rv.json and rv.json['email'] == user.email
 
     def test_get_authenticated_user(self):
         """Test retrieving the authenticated user."""
-        access_token = self.user.generate_auth_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        rv = self.client.get('/api/v1/me', headers=headers)
+        rv = self.client.get('/api/v1/me', headers=self.headers)
         assert rv.status_code == 200
         assert 'email' in rv.json and rv.json['email'] == self.user.email

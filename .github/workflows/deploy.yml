@@ -50,9 +50,10 @@ jobs:
           echo "AF_ADMIN_EMAIL=hakimalai@outlook.com" >> .env
           echo "AF_ERROR_EMAIL=${{ secrets.ERROR_EMAIL }}" >> .env
           echo "OAUTHLIB_INSECURE_TRANSPORT=true" >> .env
+          echo "DOCKER_DB_NAME=arcticfox" >> .env
           echo "DOCKER_DB_PORT=5432" >> .env
-          echo "DOCKER_DB_USER=arcticfox" >> .env
-          echo "DOCKER_DB_PASSWORD=password" >> .env
+          echo "DOCKER_DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DOCKER_DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
       - name: SSH and Deploy to EC2
         env:

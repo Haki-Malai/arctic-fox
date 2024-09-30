@@ -35,12 +35,12 @@ class FileTests(BaseTestCase):
             'description': 'This is a test file',
             'folder_id': folder.id
         }
-        rv = self.client.post('/api/v1/files', json=data)
+        rv = self.client.post('/api/v1/files', json=data, headers=self.headers)
         assert rv.status_code == 201
         assert 'filename' in rv.json and rv.json['filename'] == 'testfile.png'
         file_id = rv.json['id']
 
-        rv = self.client.get(f'/api/v1/files/{file_id}')
+        rv = self.client.get(f'/api/v1/files/{file_id}', headers=self.headers)
         assert rv.status_code == 200
         assert 'description' in rv.json and rv.json['description'] == 'This is a test file'
         assert 'preview_url' in rv.json
@@ -52,8 +52,8 @@ class FileTests(BaseTestCase):
         db.session.add(file)
         db.session.commit()
 
-        rv = self.client.delete(f'/api/v1/files/{file.id}')
+        rv = self.client.delete(f'/api/v1/files/{file.id}', headers=self.headers)
         assert rv.status_code == 204
 
-        rv = self.client.get(f'/api/v1/files/{file.id}')
+        rv = self.client.get(f'/api/v1/files/{file.id}', headers=self.headers)
         assert rv.status_code == 404

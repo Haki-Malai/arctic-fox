@@ -24,7 +24,7 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         pip install -r requirements.txt
 
-    - name: Start Redis
+    - name: Start redis container
       run: |
         docker-compose up -d --build redis
 

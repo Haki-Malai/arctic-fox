@@ -62,4 +62,4 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
           rsync -avz -e "ssh -i ~/.ssh/id_rsa" --exclude='.git/' --exclude='node_modules/' .env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/arctic-fox/
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd ~/arctic-fox && docker-compose up -d --build"
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd ~/arctic-fox && docker compose up -d --build"

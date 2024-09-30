@@ -13,7 +13,7 @@ class Config(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 30
 
     CACHE_TYPE: str = 'redis'
-    REDIS_URL: RedisDsn
+    REDIS_URL: RedisDsn = 'redis://localhost:6379/0'
 
     AWS_REGION: str = 'us-east-1'
     AWS_BUCKET: str = 'arctic-fox'

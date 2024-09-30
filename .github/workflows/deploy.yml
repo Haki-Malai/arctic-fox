@@ -7,7 +7,7 @@ on:
       - main
   workflow_dispatch:
   workflow_run:
-    workflows: ["PyTest"]
+    #workflows: ["PyTest"]
     types:
       - completed
     branches:
@@ -65,14 +65,15 @@ jobs:
           sudo apt-get install -y openssh-client
 
           eval "$(ssh-agent -s)"
-
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - || { echo "Failed to add SSH key to agent"; exit 1; }
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ssh_key
+          tr -d '\r' < ssh_key | ssh-add -
+          rm ssh_key
 
           mkdir -p ~/.ssh
           touch ~/.ssh/known_hosts
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
-          scp .env $EC2_USER@$EC2_HOST:~/arctic-fox/
+          scp -v .env $EC2_USER@$EC2_HOST:~/arctic-fox/
 
           ssh -v -tt $EC2_USER@$EC2_HOST << EOF
             set -e

@@ -4,7 +4,7 @@ from pydantic import PostgresDsn, RedisDsn
 
 class Config(BaseSettings):
     ALCHEMICAL_ECHO: bool = False
-    POSTGRES_URI: PostgresDsn = 'postgresql://username:password@localhost/db'
+    POSTGRES_URI: PostgresDsn = 'postgresql://username:password@postgres/db'
     ALCHEMICAL_DATABASE_URL: str = str(POSTGRES_URI)
 
     SECRET_KEY: str = 'secret'
@@ -13,7 +13,7 @@ class Config(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 30
 
     CACHE_TYPE: str = 'redis'
-    REDIS_URL: RedisDsn = 'redis://localhost:6379/0'
+    REDIS_URL: RedisDsn = 'redis://redis:6379/0'
 
     AWS_REGION: str = 'us-east-1'
     AWS_BUCKET: str = 'arctic-fox'

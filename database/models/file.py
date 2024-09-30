@@ -17,8 +17,8 @@ class File(TimestampMixin, UpdateableMixin, db.Model):
     processed: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     dominant_color: so.Mapped[Optional[str]] = so.mapped_column(sa.String(7))
     error: so.Mapped[Optional[str]] = so.mapped_column(sa.String(280))
-    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'))
     folder_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('folders.id'))
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'))
 
     owner = so.relationship('User', back_populates='files')
     folder = so.relationship('Folder', back_populates='files')

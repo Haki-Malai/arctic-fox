@@ -22,32 +22,37 @@ jobs:
     steps:
       - name: Add Sensitive Variables to .env
         run: |
-          echo "FLASK_APP=arctic_fox" > .env
-          echo "FLASK_RUN_PORT=5000" >> .env
-          echo "DISABLE_AUTH=false" >> .env
-          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}" >> .env
-          echo "MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }}" >> .env
-          echo "ERROR_EMAIL=${{ secrets.ERROR_EMAIL }}" >> .env
-          echo "MAIL_SERVER=${{ secrets.MAIL_SERVER }}" >> .env
-          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
-          echo "MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}" >> .env
-          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
-          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
-          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
-          echo "AWS_BUCKET=${{ secrets.AWS_BUCKET }}" >> .env
-          echo "ARCTIC_FOX_OWNER_EMAIL=${{ secrets.ARCTIC_FOX_OWNER_EMAIL }}" >> .env
-          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
-          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
-          echo "GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}" >> .env
+          echo "AF_ALCHEMICAL_ECHO=false" > .env
+          echo "AF_ALCHEMICAL_DATABASE_URL=postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/arcticfox" >> .env
+          echo "AF_SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "AF_DISABLE_AUTH=false" >> .env
+          echo "AF_ACCESS_TOKEN_MINUTES=15" >> .env
+          echo "AF_REFRESH_TOKEN_DAYS=30" >> .env
+          echo "AF_CACHE_TYPE=redis" >> .env
+          echo "AF_REDIS_URL=redis://${{ secrets.REDIS_HOST }}:6379/0" >> .env
+          echo "AF_AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AF_AWS_BUCKET=${{ secrets.AWS_BUCKET }}" >> .env
+          echo "AF_AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AF_AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AF_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "AF_GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "AF_GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}" >> .env
+          echo "AF_APIFAIRY_TITLE=Arctic Fox API" >> .env
+          echo "AF_APIFAIRY_VERSION=1.0" >> .env
+          echo "AF_APIFAIRY_UI=swagger_ui" >> .env
+          echo "AF_APIFAIRY_UI_PATH=/api" >> .env
+          echo "AF_MAIL_SERVER=${{ secrets.MAIL_SERVER }}" >> .env
+          echo "AF_MAIL_PORT=${{ secrets.MAIL_PORT }}" >> .env
+          echo "AF_MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }}" >> .env
+          echo "AF_MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> .env
+          echo "AF_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> .env
+          echo "AF_MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }}" >> .env
+          echo "AF_ADMIN_EMAIL=hakimalai@outlook.com" >> .env
+          echo "AF_ERROR_EMAIL=${{ secrets.ERROR_EMAIL }}" >> .env
           echo "OAUTHLIB_INSECURE_TRANSPORT=true" >> .env
+          echo "DOCKER_DB_PORT=5432" >> .env
+          echo "DOCKER_DB_USER=arcticfox" >> .env
+          echo "DOCKER_DB_PASSWORD=password" >> .env
 
       - name: SSH and Deploy to EC2
         env:

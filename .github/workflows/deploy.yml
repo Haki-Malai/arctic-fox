@@ -67,6 +67,8 @@ jobs:
           eval "$(ssh-agent -s)"
           echo "${{ secrets.SERVER_SSH_KEY }}" > ssh_key
           chmod 600 ssh_key
+          cat ssh_key
+          ssh-add ssh_key
           tr -d '\r' < ssh_key | ssh-add -
 
           mkdir -p ~/.ssh

@@ -6,12 +6,12 @@ on:
       - development
       - main
   workflow_dispatch:
-  workflow_run:
+  #workflow_run:
     #workflows: ["PyTest"]
-    types:
-      - completed
-    branches:
-      - main
+    #types:
+    #  - completed
+    #branches:
+    # - main
 
 jobs:
   deploy:
